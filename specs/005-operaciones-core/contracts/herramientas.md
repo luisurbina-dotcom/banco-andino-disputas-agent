@@ -1,8 +1,8 @@
 # Contrato: herramientas del servidor MCP `banco` (parte 2)
 
 Errores con el formato del contrato del #4 (`{"error": {tipo, codigo, reintentable, mensaje}}`
-como error de herramienta). Toda herramienta de esta parte puede responder
-`TRANSITORIO/CORE_NO_DISPONIBLE` (`reintentable: true`) si hay fallas programadas.
+como error de herramienta). Las cuatro herramientas de esta parte (no `buscar_cliente` ni `verificar_identidad`) pueden
+responder `TRANSITORIO/CORE_NO_DISPONIBLE` (`reintentable: true`) si hay fallas programadas.
 
 ## `consultar_transacciones`
 
@@ -65,7 +65,8 @@ como error de herramienta). Toda herramienta de esta parte puede responder
 
 **Salida**: `{"id_caso", "estado": "en_cola_analista", "resumen": {…}}` (data-model § Caso).
 
-**Errores**: `VALIDACION/RESUMEN_INCOMPLETO` (descripción o acción recomendada vacías),
+**Errores**: `VALIDACION/RESUMEN_INCOMPLETO` (descripción o acción recomendada vacías, o causa
+fuera de las 5 en llamadas directas al core; por MCP la restringe el esquema),
 `VALIDACION/TRANSACCION_NO_ENCONTRADA`, `VALIDACION/CLIENTE_NO_EXISTE`.
 
 ## Configuración

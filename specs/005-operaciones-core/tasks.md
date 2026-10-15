@@ -57,7 +57,7 @@ description: "Tareas de implementación: operaciones del core"
 
 **Independent Test**: `uv run pytest -q src/mcp_server/test_operaciones.py -k escalar`; quickstart C6–C7.
 
-- [ ] T009 [P] [US4] Agregar tests de `escalar_a_analista`: con `id_cliente="CLI-001"`, `id_transacciones=["TX-0002"]` y causa `MONTO_SUPERA_UMBRAL` → caso `en_cola_analista` cuyo resumen trae nombre del cliente y la transacción con fecha, monto 1 250 000, comercio y país del core; `CLIENTE_PIDE_PERSONA` sin cliente ni verificación → aceptado con `cliente: None`; descripción o acción recomendada vacías → `VALIDACION/RESUMEN_INCOMPLETO`; id de transacción desconocido → `VALIDACION/TRANSACCION_NO_ENCONTRADA`; cliente desconocido → `VALIDACION/CLIENTE_NO_EXISTE`; los casos quedan en `core.casos` con ids correlativos
+- [ ] T009 [P] [US4] Agregar tests de `escalar_a_analista`: con `id_cliente="CLI-001"`, `id_transacciones=["TX-0002"]` y causa `MONTO_SUPERA_UMBRAL` → caso `en_cola_analista` cuyo resumen trae nombre del cliente y la transacción con fecha, monto 1 250 000, comercio y país del core; `CLIENTE_PIDE_PERSONA` sin cliente ni verificación → aceptado con `cliente: None`; descripción o acción recomendada vacías → `VALIDACION/RESUMEN_INCOMPLETO`; causa fuera de las 5 (llamada directa al core) → `VALIDACION/RESUMEN_INCOMPLETO`; id de transacción desconocido → `VALIDACION/TRANSACCION_NO_ENCONTRADA`; cliente desconocido → `VALIDACION/CLIENTE_NO_EXISTE`; los casos quedan en `core.casos` con ids correlativos
 - [ ] T010 [US4] Implementar `Operaciones.escalar_a_analista(causa, descripcion, accion_recomendada, id_cliente=None, id_transacciones=None, acciones_realizadas=None)` según research R4 y data-model § Caso; hacer pasar T009
 
 ---
