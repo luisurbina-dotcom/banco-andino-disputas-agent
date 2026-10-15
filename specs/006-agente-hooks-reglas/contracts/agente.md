@@ -3,10 +3,10 @@
 ## API
 
 ```python
-async with AgenteDisputas() as agente:          # lanza CLI + servidor banco
+async with AgenteDisputas() as agente:  # lanza CLI + servidor banco
     turno = await agente.responder("Hola, no reconozco…")
-    turno.texto        # respuesta al cliente
-    turno.eventos      # list[Evento] de este turno
+    turno.texto  # respuesta al cliente
+    turno.eventos  # list[Evento] de este turno
     turno.stop_reason  # p. ej. "end_turn"
 ```
 
