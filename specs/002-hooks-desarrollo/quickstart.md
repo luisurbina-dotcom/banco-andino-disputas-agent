@@ -42,3 +42,32 @@ Al terminar: borrar `notas.md`, `src/x.py`, la rama `999-prueba` y revertir V12.
   ocasionales de la máquina. Cumple SC-006 (< 1 s perceptible); la meta interna del plan
   (< 300 ms) solo la cumple la mediana de `spec_primero` y `secretos_bash`. El costo es casi
   todo el arranque del intérprete; se acepta.
+
+## Resultados de la verificación en vivo (2026-10-15)
+
+| # | Resultado | Cómo |
+|---|---|---|
+| V1 | ✅ Tarjeta agrupada que pasa Luhn → bloqueada por `[datos_ficticios]`, `notas.md` no se creó | Sesión nueva `claude -p`; número generado en tiempo de ejecución |
+| V2 | ✅ "terminada en 4821" y "$1.250.000" → escrito | Sesión nueva `claude -p` |
+| V3 | ✅ "cédula" + número con puntos de miles → bloqueado | Sesión nueva `claude -p` |
+| V4 | ✅ "documento FIC-…" → escrito | Sesión nueva `claude -p` |
+| V5 | ✅ Rama `prueba-sin-feature`: `src/x.py` → "no es una feature" | Sesión de implementación |
+| V6 | ✅ Rama `999-prueba` sin carpeta: "Faltan spec.md, plan.md, tasks.md" | Sesión de implementación |
+| V7 | ✅ Rama `002-hooks-desarrollo` completa: `src/tmp_fmt.py` → permitido | Sesión de implementación |
+| V8 | ✅ `python3 -c "print(open(...))"` sobre el archivo de entorno → bloqueado | Sesión de implementación |
+| V9 | ✅ Listar la carpeta de secretos → bloqueado por `[secretos_bash]` | Sesión de implementación |
+| V10 | ✅ Leer la plantilla de variables con `cat` → permitido | Sesión de implementación |
+| V11 | ✅ Import sin usar eliminado y archivo formateado | Sesión de implementación |
+| V12 | ✅ `detector.py` con error de sintaxis → escritura bloqueada | Sesión de implementación |
+
+Hallazgos:
+
+- **V12 confirma research R4 y la necesidad de las dos capas.** El error ocurre al importar
+  `detector` en `datos_ficticios.py`, antes de `ejecutar_seguro`: Python sale con 1 (no
+  bloqueante). La escritura se bloqueó por `"onFailure": "block"` ("failed; blocking because
+  onFailure is "block""). La opción existe en Claude Code 2.1.300.
+- **V11 detectó un defecto de orden**: formatear antes de `ruff check --fix` dejaba una línea en
+  blanco al inicio tras borrar el import. Se invirtió el orden y el test ahora exige que el
+  archivo empiece por el código.
+- **R11 se observó en la práctica**: un comando con un heredoc que solo *mencionaba* la carpeta
+  de secretos fue bloqueado por `secretos_bash`. Se usó la herramienta de edición en su lugar.

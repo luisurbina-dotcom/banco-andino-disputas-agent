@@ -29,13 +29,14 @@ def main() -> int:
         config = raiz / "pyproject.toml"
         opciones = ["--config", str(config)] if config.is_file() else []
         ruff = ["uv", "run", "--quiet", "ruff"]
-        subprocess.run([*ruff, "format", *opciones, str(ruta)], cwd=raiz, capture_output=True)
+        # Primero las correcciones (pueden borrar líneas) y después el formato.
         check = subprocess.run(
             [*ruff, "check", "--fix", *opciones, str(ruta)],
             cwd=raiz,
             capture_output=True,
             text=True,
         )
+        subprocess.run([*ruff, "format", *opciones, str(ruta)], cwd=raiz, capture_output=True)
     except Exception as error:  # el formateo nunca bloquea
         avisar(f"No se pudo formatear: {type(error).__name__}.")
         return 0

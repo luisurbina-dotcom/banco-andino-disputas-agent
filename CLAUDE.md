@@ -7,12 +7,13 @@ MCP propio que simula el core bancario. Los principios del proyecto son la const
 
 ## Stack y comandos
 
-Python 3.12 con uv. Comandos objetivo (se habilitan en los issues #4 y #8):
+Python 3.12 con uv.
 
 - `uv sync` instala dependencias.
 - `uv run pytest` corre los tests unitarios (sin red ni API key).
-- `uv run pytest -m e2e` corre los casos end-to-end (requiere `ANTHROPIC_API_KEY`).
-- `uv run python -m chat` arranca la interfaz de chat.
+- `uv run pytest -m e2e` corre los casos end-to-end (objetivo, issue #9; requiere `ANTHROPIC_API_KEY`).
+- `uv run python -m chat` arranca la interfaz de chat (objetivo, issue #8).
+- Hooks de equipo en `.claude/hooks/` (datos ficticios, spec primero, secretos, formateo).
 
 ## Estructura
 

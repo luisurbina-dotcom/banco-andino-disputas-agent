@@ -21,7 +21,7 @@ def test_formatea_y_quita_import_sin_usar(correr_hook, tmp_path):
     assert r.returncode == 0, r.stderr
     contenido = archivo.read_text()
     assert "import os" not in contenido
-    assert "x = 1" in contenido
+    assert contenido.startswith("x = 1")
     assert "def f(a):" in contenido
 
 
