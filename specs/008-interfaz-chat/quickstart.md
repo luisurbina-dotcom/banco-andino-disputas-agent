@@ -17,7 +17,7 @@ BANCO_FALLAS_TRANSITORIAS=consultar_transacciones:1 uv run python -m chat --guio
 
 ## Resultados (2026-10-15)
 
-- 44 tests en `src/chat` (385 en el repo) tras la revisión, ruff limpio, `verificar_ecosistema.sh` OK.
+- 45 tests en `src/chat` (386 en el repo) tras la revisión, ruff limpio, `verificar_ecosistema.sh` OK.
 
 | # | Resultado |
 |---|---|

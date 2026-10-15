@@ -1,4 +1,6 @@
 import asyncio
+import os
+import signal
 
 import pytest
 from rich.console import Console
@@ -79,8 +81,10 @@ class AgenteConEstado:
         from agent.garantias import EstadoSesion
 
         self.estado = EstadoSesion(transacciones={})
+        self.recibidos = []
 
     async def responder(self, texto):
+        self.recibidos.append(texto)
         self.estado.eventos.append(
             Evento("bloquear_tarjeta", {}, "ok", {"bloqueada": True, "ultimos4": "4821"})
         )
@@ -88,8 +92,9 @@ class AgenteConEstado:
 
 
 async def test_ctrl_c_durante_un_turno_muestra_el_resumen_con_lo_hecho():
-    consola = _consola()
-    await app.conversar(AgenteConEstado(), iter(["hola", "otro"]), consola)
+    agente, consola = AgenteConEstado(), _consola()
+    await app.conversar(agente, iter(["hola", "otro"]), consola)
+    assert agente.recibidos == ["hola"]  # la interrupción cierra la sesión
     texto = consola.export_text()
     assert "interrumpida" in texto
     assert "TARJETA BLOQUEADA" in texto.split("Resumen")[-1]
@@ -146,3 +151,48 @@ def test_eof_del_teclado_termina_las_entradas():
             raise EOFError
 
     assert list(app.entradas_de_teclado(SinEntrada())) == []
+
+
+class AgenteInterrumpido:
+    """Agente falso que recibe Ctrl+C real (dos SIGINT, como con `uv run`) a mitad del turno."""
+
+    def __init__(self):
+        from agent.garantias import EstadoSesion
+
+        self.estado = EstadoSesion(transacciones={})
+        self.cancelaciones = 0
+        self.cerrado = False
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *exc):
+        os.kill(os.getpid(), signal.SIGINT)  # un Ctrl+C durante el cierre se ignora
+        await asyncio.sleep(0.05)
+        self.cerrado = True
+
+    async def responder(self, texto):
+        self.estado.eventos.append(
+            Evento("bloquear_tarjeta", {}, "ok", {"bloqueada": True, "ultimos4": "4821"})
+        )
+        os.kill(os.getpid(), signal.SIGINT)
+        os.kill(os.getpid(), signal.SIGINT)
+        try:
+            await asyncio.sleep(10)
+        except asyncio.CancelledError:
+            self.cancelaciones += 1
+            raise
+
+
+def test_sigint_real_a_mitad_de_turno(tmp_path, capsys):
+    guion = tmp_path / "guion.txt"
+    guion.write_text("hola\notro\n", encoding="utf-8")
+    agente = AgenteInterrumpido()
+    codigo = app.main(["--guion", str(guion)], fabrica_agente=lambda: agente)
+    salida = capsys.readouterr()
+    assert codigo == 0
+    assert agente.cancelaciones == 1 and agente.cerrado
+    assert "interrumpida" in salida.out
+    assert "TARJETA BLOQUEADA" in salida.out.split("Resumen")[-1]
+    assert "Traceback" not in salida.err
+    assert signal.getsignal(signal.SIGINT) is signal.default_int_handler
