@@ -101,7 +101,7 @@ Luhn (edge case de la spec): ningún literal válido en los archivos de test.
 - [X] T018 Ejecutar la verificación en vivo V1–V12 de `specs/002-hooks-desarrollo/quickstart.md` en sesiones nuevas de Claude Code (incluida la confirmación de `onFailure`, research R4: si la versión instalada no la reconoce, quitar la clave de `.claude/settings.json` y documentar que el fail-closed queda solo en el `try/except`), registrar resultados en una tabla al final del quickstart y limpiar los artefactos de prueba
 - [X] T019 Revisión independiente con un subagente de solo lectura sin el contexto de esta sesión sobre `git diff main...HEAD` contra spec y contrato; registrar hallazgos y resolución en `specs/002-hooks-desarrollo/review.md`
 - [X] T020 Revisión de cumplimiento de los principios I–IV sobre el diff; agregar el resultado a `specs/002-hooks-desarrollo/review.md`
-- [ ] T021 Cerrar el ciclo: PR de `002-hooks-desarrollo` hacia `main` con `Closes #2`, issue #2 a In review y comentario de avance (especificado, decidido, pendiente)
+- [X] T021 Cerrar el ciclo: PR de `002-hooks-desarrollo` hacia `main` con `Closes #2`, issue #2 a In review y comentario de avance (especificado, decidido, pendiente)
 
 ---
 
