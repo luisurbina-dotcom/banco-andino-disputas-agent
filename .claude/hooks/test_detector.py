@@ -82,3 +82,50 @@ def test_las_detecciones_no_contienen_el_numero():
     deteccion = detectar(f"tarjeta {numero}")[0]
     assert numero not in repr(deteccion)
     assert numero[-4:] not in deteccion.sugerencia
+
+
+# --- Hallazgos de la revisión independiente (review.md) ---
+
+
+def _agrupada(numero: str) -> str:
+    return " ".join(numero[i : i + 4] for i in range(0, len(numero), 4))
+
+
+@pytest.mark.parametrize(
+    "plantilla",
+    [
+        "{t} 123",  # CVV a continuación
+        "{t} 12/27",  # vencimiento
+        "{t}-01",
+        "{t} 1",
+        "1 {t}",
+        "paso 3 {t}",
+    ],
+)
+@pytest.mark.parametrize("agrupar", [False, True])
+def test_detecta_tarjeta_con_digitos_vecinos(plantilla, agrupar):
+    numero = tarjeta_valida("4", 16)
+    t = _agrupada(numero) if agrupar else numero
+    assert [d.tipo for d in detectar(plantilla.format(t=t))] == ["tarjeta"]
+
+
+def test_detecta_formato_amex_4_6_5():
+    n = tarjeta_valida("37", 15)
+    assert [d.tipo for d in detectar(f"amex {n[:4]} {n[4:10]} {n[10:]}")] == ["tarjeta"]
+
+
+def test_no_une_numeros_sueltos_en_una_tarjeta():
+    # Teléfono + monto: grupos que no tienen forma de tarjeta.
+    assert detectar("llamar al 3001234567 por 1250000") == []
+
+
+@pytest.mark.parametrize(
+    "etiqueta",
+    ["CC.", "C.C", "C. C.", "cédula de ciudadanía", "documento nro.", "documento n.º", "NIT."],
+)
+def test_detecta_variantes_de_etiqueta(etiqueta):
+    assert [d.tipo for d in detectar(f"{etiqueta} {_documento(8)}")] == ["documento"]
+
+
+def test_no_detecta_documento_de_11_digitos():
+    assert detectar(f"cédula {_documento(11)}") == []

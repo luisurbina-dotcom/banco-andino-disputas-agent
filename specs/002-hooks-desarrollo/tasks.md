@@ -99,8 +99,8 @@ Luhn (edge case de la spec): ningún literal válido en los archivos de test.
 - [X] T016 Actualizar `CLAUDE.md` (sección Stack y comandos) para indicar que `uv sync` y `uv run pytest` ya funcionan, manteniendo ≤ 60 líneas, y que `bash scripts/verificar_ecosistema.sh` siga en OK (requiere aprobación del responsable)
 - [X] T017 Ejecutar `uv run pytest -q` y `uv run ruff check .` y `uv run ruff format --check .`; todo en verde y la suite en < 10 s (SC-005); medir el tiempo de cada hook de bloqueo con una entrada típica (`time python3 .claude/hooks/<hook>.py < evento.json`) y confirmar < 300 ms (SC-006, plan)
 - [X] T018 Ejecutar la verificación en vivo V1–V12 de `specs/002-hooks-desarrollo/quickstart.md` en sesiones nuevas de Claude Code (incluida la confirmación de `onFailure`, research R4: si la versión instalada no la reconoce, quitar la clave de `.claude/settings.json` y documentar que el fail-closed queda solo en el `try/except`), registrar resultados en una tabla al final del quickstart y limpiar los artefactos de prueba
-- [ ] T019 Revisión independiente con un subagente de solo lectura sin el contexto de esta sesión sobre `git diff main...HEAD` contra spec y contrato; registrar hallazgos y resolución en `specs/002-hooks-desarrollo/review.md`
-- [ ] T020 Revisión de cumplimiento de los principios I–IV sobre el diff; agregar el resultado a `specs/002-hooks-desarrollo/review.md`
+- [X] T019 Revisión independiente con un subagente de solo lectura sin el contexto de esta sesión sobre `git diff main...HEAD` contra spec y contrato; registrar hallazgos y resolución en `specs/002-hooks-desarrollo/review.md`
+- [X] T020 Revisión de cumplimiento de los principios I–IV sobre el diff; agregar el resultado a `specs/002-hooks-desarrollo/review.md`
 - [ ] T021 Cerrar el ciclo: PR de `002-hooks-desarrollo` hacia `main` con `Closes #2`, issue #2 a In review y comentario de avance (especificado, decidido, pendiente)
 
 ---

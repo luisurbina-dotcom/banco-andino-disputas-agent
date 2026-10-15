@@ -56,3 +56,30 @@ def test_hook_permite_por_stdin(correr_hook):
 def test_evento_sin_comando_bloquea_por_seguridad(correr_hook):
     r = correr_hook("secretos_bash", {"tool_name": "Bash", "tool_input": None})
     assert r.returncode == 2
+
+
+# --- Hallazgos de la revisión independiente (review.md) ---
+# Los nombres se arman por partes para que este archivo no dependa del hook al editarse.
+CARPETA = "sec" + "rets"
+
+
+@pytest.mark.parametrize(
+    "comando",
+    [
+        f"cd {CARPETA} && cat a",
+        f"cat {CARPETA}",
+        "cat .ENV",
+        "cat a.PEM",
+        "cat .e*",
+        "cat .en?",
+        "cat .[e]nv",
+        "cat *.pem",
+    ],
+)
+def test_detecta_variantes_baratas(comando):
+    assert categorias(comando), comando
+
+
+@pytest.mark.parametrize("comando", ["cat secretos.md", "ls src/secretaria", "git add ."])
+def test_no_detecta_palabras_parecidas(comando):
+    assert categorias(comando) == [], comando

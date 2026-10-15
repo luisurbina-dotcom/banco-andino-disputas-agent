@@ -26,7 +26,8 @@ def es_codigo_de_produccion(relativa: Path) -> bool:
 
 def revisar(evento: dict) -> None:
     raiz = raiz_repo()
-    ruta = Path((evento.get("tool_input") or {})["file_path"])
+    entrada = evento.get("tool_input") or {}
+    ruta = Path(entrada.get("file_path") or entrada["notebook_path"])  # NotebookEdit
     if not ruta.is_absolute():
         ruta = Path(evento.get("cwd") or raiz) / ruta
     try:

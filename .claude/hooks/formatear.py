@@ -28,21 +28,27 @@ def main() -> int:
         raiz = raiz_repo()
         config = raiz / "pyproject.toml"
         opciones = ["--config", str(config)] if config.is_file() else []
-        ruff = ["uv", "run", "--quiet", "ruff"]
-        # Primero las correcciones (pueden borrar líneas) y después el formato.
-        check = subprocess.run(
-            [*ruff, "check", "--fix", *opciones, str(ruta)],
-            cwd=raiz,
-            capture_output=True,
-            text=True,
-        )
-        subprocess.run([*ruff, "format", *opciones, str(ruta)], cwd=raiz, capture_output=True)
+        # --no-sync: un hook no debe instalar dependencias ni depender de la red.
+        ruff = ["uv", "run", "--no-sync", "--quiet", "ruff"]
+
+        def correr(*args: str) -> subprocess.CompletedProcess:
+            return subprocess.run(
+                [*ruff, *args, *opciones, str(ruta)], cwd=raiz, capture_output=True, text=True
+            )
+
+        # Primero las correcciones (pueden borrar líneas), luego el formato y al final un
+        # check sin --fix para informar solo lo que de verdad quedó pendiente.
+        correr("check", "--fix")
+        correr("format")
+        final = correr("check")
     except Exception as error:  # el formateo nunca bloquea
         avisar(f"No se pudo formatear: {type(error).__name__}.")
         return 0
-    if check.returncode != 0:
-        avisar(f"Quedan problemas que ruff no corrige solo:\n{check.stdout.strip()}")
+    if final.returncode == 1:  # ruff: 1 = quedan diagnósticos
+        avisar(f"Quedan problemas que ruff no corrige solo:\n{final.stdout.strip()}")
         return 2
+    if final.returncode != 0:  # error de la herramienta (ruff ausente, config inválida…)
+        avisar(f"ruff no pudo ejecutarse: {(final.stderr or final.stdout).strip()[:300]}")
     return 0
 
 

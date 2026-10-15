@@ -79,3 +79,33 @@ def test_permite_rutas_fuera_del_repo(correr_hook, repo, tmp_path_factory):
     evento = {"tool_name": "Write", "tool_input": {"file_path": str(afuera), "content": ""}}
     r = correr_hook("spec_primero", evento, env={"CLAUDE_PROJECT_DIR": str(repo)}, cwd=repo)
     assert r.returncode == 0
+
+
+# --- Hallazgos de la revisión independiente (review.md) ---
+
+
+def test_bloquea_con_head_desacoplado(correr_hook, repo):
+    _feature(repo, "996-desacoplado", ["spec.md", "plan.md", "tasks.md"])
+    _git(repo, "checkout", "-q", "--detach")
+    r = _editar(correr_hook, repo, "src/x.py")
+    assert r.returncode == 2
+    assert '"HEAD"' in r.stderr
+
+
+def test_ruta_relativa_se_resuelve_con_cwd(correr_hook, repo):
+    evento = {"tool_name": "Write", "cwd": str(repo), "tool_input": {"file_path": "src/x.py"}}
+    r = correr_hook("spec_primero", evento, env={"CLAUDE_PROJECT_DIR": str(repo)}, cwd=repo)
+    assert r.returncode == 2
+
+
+def test_permite_src_claude_md_en_la_raiz_de_src(correr_hook, repo):
+    assert _editar(correr_hook, repo, "src/CLAUDE.md").returncode == 0
+
+
+def test_notebook_edit_usa_notebook_path(correr_hook, repo):
+    evento = {
+        "tool_name": "NotebookEdit",
+        "tool_input": {"notebook_path": str(repo / "src" / "n.ipynb"), "new_source": "x = 1"},
+    }
+    r = correr_hook("spec_primero", evento, env={"CLAUDE_PROJECT_DIR": str(repo)}, cwd=repo)
+    assert r.returncode == 2

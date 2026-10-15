@@ -49,12 +49,14 @@ def raiz_repo() -> Path:
 
 
 def texto_nuevo(evento: dict) -> str:
-    """Contenido nuevo que la herramienta va a escribir (Write, Edit o MultiEdit)."""
+    """Contenido nuevo que la herramienta va a escribir (Write, Edit, MultiEdit, NotebookEdit)."""
     entrada = evento.get("tool_input") or {}
     if "content" in entrada:
         return str(entrada["content"])
     if "new_string" in entrada:
         return str(entrada["new_string"])
+    if "new_source" in entrada:  # NotebookEdit
+        return str(entrada["new_source"])
     if "edits" in entrada:
         return "\n".join(str(e.get("new_string", "")) for e in entrada["edits"])
     return ""

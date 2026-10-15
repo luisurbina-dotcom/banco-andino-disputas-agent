@@ -54,3 +54,15 @@ def test_sin_uv_avisa_y_no_bloquea(correr_hook, tmp_path):
     r = _correr(correr_hook, archivo, env={"PATH": sin_uv})
     assert r.returncode == 0
     assert "uv" in r.stderr
+
+
+def test_error_de_la_herramienta_avisa_y_no_bloquea(correr_hook, tmp_path):
+    # Config de ruff inválida → ruff sale con código distinto de 1: aviso, sin bloquear.
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "pyproject.toml").write_text("[tool.ruff]\nline-length = 'no'\n")
+    archivo = tmp_path / "a.py"
+    archivo.write_text("x = 1\n")
+    r = correr_hook("formatear", _evento(archivo), env={"CLAUDE_PROJECT_DIR": str(repo)})
+    assert r.returncode == 0
+    assert "[formatear]" in r.stderr

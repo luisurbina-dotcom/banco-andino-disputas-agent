@@ -11,14 +11,18 @@ from comun import bloquear, ejecutar_seguro
 
 HOOK = "secretos_bash"
 
-_ENTORNO = re.compile(r"(?<![\w.-])\.env(?:rc|\.[\w.-]+)?(?![\w])")
-_SECRETOS = re.compile(r"(?<![\w.-])secrets/")
-_CLAVES = re.compile(r"[\w.-]+\.(?:pem|key)(?![\w])")
+_ENTORNO = re.compile(r"(?<![\w.-])\.env(?:rc|\.[\w.-]+)?(?![\w])", re.IGNORECASE)
+# Globs baratos que expanden al archivo de entorno: .e*, .en?, .[e]nv (también atrapa ".*").
+_GLOB_ENTORNO = re.compile(r"(?<![\w.-])\.(?=[^\s/]*[*?\[])[\[\]env*?]{1,8}(?![\w])", re.I)
+_SECRETOS = re.compile(r"(?<![\w.-])secrets(?![\w-])", re.IGNORECASE)
+_CLAVES = re.compile(r"[\w.*?-]+\.(?:pem|key)(?![\w])", re.IGNORECASE)
 
 
 def categorias(comando: str) -> list[str]:
     encontradas = []
-    if any(m.group() != ".env.example" for m in _ENTORNO.finditer(comando)):
+    if any(m.group().lower() != ".env.example" for m in _ENTORNO.finditer(comando)) or (
+        _GLOB_ENTORNO.search(comando)
+    ):
         encontradas.append("archivo de entorno")
     if _SECRETOS.search(comando):
         encontradas.append("carpeta secrets/")
