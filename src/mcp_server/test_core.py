@@ -183,3 +183,44 @@ def test_cliente_bloqueado_responde_bloqueo_aunque_la_fecha_este_mal_formada(cor
     with pytest.raises(ErrorCore) as e:
         core.verificar_identidad(id_cliente, "15/10/1990")
     assert e.value.codigo == "IDENTIDAD_BLOQUEADA"
+
+
+# --- Estado compartido para las operaciones (#5) ---
+
+
+def test_registra_clientes_verificados(core, titular_4821):
+    id_cliente = titular_4821["id_cliente"]
+    core.verificar_identidad(id_cliente, "1900-01-01")
+    assert core.esta_verificado(id_cliente) is False
+    core.verificar_identidad(id_cliente, titular_4821["fecha_nacimiento"])
+    assert core.esta_verificado(id_cliente) is True
+
+
+def test_fallas_programadas_se_consumen_y_desaparecen(core):
+    core.programar_fallas("consultar_transacciones", 2)
+    for _ in range(2):
+        with pytest.raises(ErrorCore) as e:
+            core.consumir_falla("consultar_transacciones")
+        assert (e.value.tipo, e.value.codigo, e.value.reintentable) == (
+            "TRANSITORIO",
+            "CORE_NO_DISPONIBLE",
+            True,
+        )
+    core.consumir_falla("consultar_transacciones")  # ya no falla
+    core.consumir_falla("bloquear_tarjeta")  # otra herramienta nunca falló
+
+
+def test_numero_de_fallas_negativo_es_error_de_programacion(core):
+    with pytest.raises(ValueError):
+        core.programar_fallas("consultar_transacciones", -1)
+
+
+def test_bloqueo_revoca_una_verificacion_previa(core, titular_4821):
+    id_cliente = titular_4821["id_cliente"]
+    core.verificar_identidad(id_cliente, titular_4821["fecha_nacimiento"])
+    assert core.esta_verificado(id_cliente)
+    for _ in range(2):
+        core.verificar_identidad(id_cliente, "1900-01-01")
+    with pytest.raises(ErrorCore):
+        core.verificar_identidad(id_cliente, "1900-01-01")
+    assert core.esta_verificado(id_cliente) is False
