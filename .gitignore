@@ -1,0 +1,23 @@
+# Material personal fuera del repo (enunciado y notas de sustentación)
+*.pdf
+Puntos que van a preguntar.MD
+
+# Secretos y entorno: nunca versionados
+.env
+.env.*
+!.env.example
+secrets/
+
+# Preferencias personales de Claude Code
+CLAUDE.local.md
+.claude/settings.local.json
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+*.egg-info/
