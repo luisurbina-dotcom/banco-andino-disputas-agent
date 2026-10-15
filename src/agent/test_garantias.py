@@ -409,3 +409,8 @@ async def test_un_subagente_sigue_sin_poder_usar_herramientas_ajenas(estado):
 async def test_entrada_malformada_se_niega_con_solo_subagentes(estado):
     salida = await _guardia(estado)(None, "t", None)
     assert _decision(salida) == ("deny", MOTIVO_HERRAMIENTA_AJENA)
+
+
+def test_el_guardia_rechaza_listas_como_texto(estado):
+    with pytest.raises(TypeError):
+        pre_herramientas_permitidas(estado, {"Agent"}, solo_subagentes="SubagentHandback")

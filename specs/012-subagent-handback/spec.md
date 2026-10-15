@@ -43,8 +43,8 @@ delegación o la devolución del subagente.
 
 1. **Given** una herramienta ajena, **When** la pide el agente principal o un subagente,
    **Then** se niega como hasta ahora.
-2. **Given** la herramienta de devolución, **When** la pide el agente principal (que no es un
-   subagente), **Then** se niega.
+2. **Given** la herramienta de devolución, **When** la pide el agente principal o un subagente
+   distinto de `analista-transacciones`, **Then** se niega.
 3. **Given** una entrada malformada, **When** se evalúa, **Then** se niega (falla cerrada).
 
 ### Edge Cases

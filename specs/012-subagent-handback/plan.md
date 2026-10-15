@@ -6,9 +6,9 @@
 
 `pre_herramientas_permitidas` (`src/agent/garantias.py`) recibe un segundo conjunto,
 `solo_subagentes`, con las herramientas internas que solo puede usar un subagente. `agente.py` lo
-configura con `{"SubagentHandback"}`. Una llamada a esas herramientas pasa solo si la entrada del
-hook trae un `agent_type` distinto del principal; en cualquier otro caso, o con una entrada
-malformada, se niega como hasta ahora.
+configura con `{"SubagentHandback"}`. Una llamada a esas herramientas se autoriza (`allow`
+explícito) solo si la entrada del hook trae `agent_type` = `analista-transacciones`; en cualquier
+otro caso, o con una entrada malformada, se niega como hasta ahora.
 
 ## Technical Context
 
@@ -37,11 +37,14 @@ src/agent/test_agente.py    # la configuración pasa el conjunto
 
 ## Research
 
-- **Decision**: permitir solo a subagentes (`agent_type` presente y distinto de `principal`).
+- **Decision**: permitir solo al analista (`agent_type` = `analista-transacciones`), con `allow`
+  explícito porque la herramienta no está en `allowed_tools` (ajuste tras la revisión).
 - **Rationale**: es la herramienta con la que un subagente entrega su resultado; el principal no
   la necesita. Si la entrada no trae `agent_type`, se trata como principal (falla cerrada).
-- **Verificación**: en vivo se repiten casos con delegación hasta observar la llamada y se
-  comprueba el `agent_type` recibido (el fallo es intermitente).
+- **Verificación** (FR-004 enmendado): tests unitarios y verificación en vivo sin regresiones; la
+  llamada no se pudo observar (no se ofrece al subagente) y queda como riesgo residual escrito.
+- El `allow` cuenta con la regla documentada de Claude Code: entre varios hooks `PreToolUse`, gana
+  la decisión más restrictiva (un `deny` de otro hook prevalece).
 
 ## Complexity Tracking
 

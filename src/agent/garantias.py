@@ -246,6 +246,11 @@ def pre_herramientas_permitidas(
     no están en `allowed_tools`; sin `agent_type` del analista, se niegan.
     """
 
+    # Un str haría que `in` compare subcadenas y ensancharía la defensa: se exigen colecciones.
+    if isinstance(permitidas, str) or isinstance(solo_subagentes, str):
+        raise TypeError("permitidas y solo_subagentes deben ser colecciones de nombres")
+    permitidas, solo_subagentes = frozenset(permitidas), frozenset(solo_subagentes)
+
     async def hook(entrada: dict, tool_use_id, contexto) -> dict:
         try:
             nombre = entrada.get("tool_name")
