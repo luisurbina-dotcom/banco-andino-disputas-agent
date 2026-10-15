@@ -25,6 +25,8 @@
 | `criterio` | str | No vacío tras recortar espacios |
 | `tipo` | `"documento"` \| `"nombre"` \| `"ultimos4"` | `ultimos4` = 4 dígitos; `documento` = `FIC-` + dígitos |
 
+Con `tipo = "nombre"` coincide el nombre completo normalizado o todo cliente cuyo nombre contenga todas las palabras buscadas ("Carlos" devuelve a todos los Carlos).
+
 **Salida**
 
 ```json
@@ -35,7 +37,8 @@
 Con `total > 1` se agrega `"accion_sugerida": "Hay varias coincidencias: pide otro identificador (documento o últimos 4 dígitos); no elijas un cliente."`
 
 **Errores**: `VALIDACION/CRITERIO_VACIO`, `VALIDACION/ULTIMOS4_INVALIDO`,
-`VALIDACION/DOCUMENTO_INVALIDO` (todos `reintentable: false`).
+`VALIDACION/DOCUMENTO_INVALIDO`, `VALIDACION/TIPO_INVALIDO` (solo en llamadas directas al core;
+por MCP el esquema ya restringe `tipo`), todos `reintentable: false`.
 
 ## `verificar_identidad`
 

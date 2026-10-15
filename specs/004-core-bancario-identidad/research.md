@@ -82,3 +82,13 @@
   ["src/mcp_server"]`; `uv sync` lo instala en modo editable.
 - **Rationale**: `python -m mcp_server` funciona desde cualquier directorio y los tests importan
   `mcp_server` sin trucos de `sys.path`.
+
+## R10. Errores de esquema
+
+- **Decision**: `tipo` se declara como enum en la herramienta y además el core lo valida
+  (`VALIDACION/TIPO_INVALIDO`) para llamadas directas. Los errores de esquema (argumento
+  ausente, tipo de dato incorrecto, valor fuera del enum) los produce FastMCP antes de llegar al
+  core, con su propio formato y `isError: true`.
+- **Rationale**: el enum en el esquema es la mejor guía para el modelo y evita llamadas mal
+  formadas. FR-008 aplica a los errores que decide el core; los de esquema son del protocolo y
+  quedan fijados con un test para que un cambio de versión no pase desapercibido.
