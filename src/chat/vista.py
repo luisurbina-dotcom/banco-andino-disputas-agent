@@ -15,7 +15,7 @@ def bienvenida(consola: Console) -> None:
             "Asistente de disputas de [bold]Banco Andino[/bold].\n"
             "Todos los datos son [bold]ficticios[/bold]. Escribe como cliente; "
             "[bold]/salir[/bold] para terminar.\n"
-            "Los recuadros de color muestran lo que el agente hizo en el banco.",
+            "Solo los recuadros de color muestran acciones reales en el banco.",
             title="Banco Andino · Chat",
             border_style="cyan",
         )
@@ -23,13 +23,19 @@ def bienvenida(consola: Console) -> None:
 
 
 def mensaje_cliente(consola: Console, texto: str) -> None:
-    consola.print(Panel(texto, title="Cliente", title_align="right", border_style="white"))
+    # Text() muestra lo escrito tal cual: corchetes como "[/b]" no se interpretan como marcado.
+    consola.print(Panel(Text(texto), title="Cliente", title_align="right", border_style="white"))
 
 
 def respuesta_agente(consola: Console, texto: str) -> None:
     # El modelo responde con Markdown (negritas, listas): se renderiza en lugar de mostrar `**`.
     consola.print(
-        Panel(Markdown(texto), title="Agente Banco Andino", title_align="left", border_style="cyan")
+        Panel(
+            Markdown(texto, hyperlinks=False),
+            title="Agente Banco Andino",
+            title_align="left",
+            border_style="cyan",
+        )
     )
 
 
@@ -49,6 +55,10 @@ def indicadores(consola: Console, lista: list[Indicador]) -> None:
             linea = Text(f"  {indicador.icono} {indicador.etiqueta}: ", style=indicador.estilo)
             linea.append(indicador.detalle, style="dim")
             consola.print(linea)
+
+
+def aviso(consola: Console, texto: str) -> None:
+    consola.print(Panel(Text(texto), title="Aviso del sistema", border_style="red"))
 
 
 def resumen(consola: Console, conteo: dict[str, int]) -> None:

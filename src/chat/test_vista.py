@@ -29,7 +29,7 @@ def test_indicadores_principales_y_secundarios_se_muestran():
     consola = _consola()
     eventos = [
         Evento("verificar_identidad", {}, "ok", {"verificado": True, "nombre": "Ana"}),
-        Evento("bloquear_tarjeta", {}, "ok", {"ultimos4": "4821"}),
+        Evento("bloquear_tarjeta", {}, "ok", {"bloqueada": True, "ultimos4": "4821"}),
         Evento("iniciar_disputa", {}, "negado", "Regla 2: supera $500.000"),
     ]
     vista.indicadores(consola, desde_eventos(eventos))
@@ -63,3 +63,16 @@ def test_respuesta_del_agente_renderiza_markdown():
     vista.respuesta_agente(consola, "Abrí la disputa **DSP-0001**.")
     texto = consola.export_text()
     assert "DSP-0001" in texto and "**" not in texto
+
+
+def test_texto_del_cliente_con_corchetes_se_muestra_literal():
+    consola = _consola()
+    vista.mensaje_cliente(consola, "[/b] [nota] cobro raro")
+    assert "[/b] [nota] cobro raro" in consola.export_text()
+
+
+def test_aviso_del_sistema():
+    consola = _consola()
+    vista.aviso(consola, "El agente no está disponible")
+    texto = consola.export_text()
+    assert "Aviso del sistema" in texto and "no está disponible" in texto

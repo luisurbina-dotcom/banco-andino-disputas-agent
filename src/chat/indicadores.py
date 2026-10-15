@@ -28,6 +28,13 @@ def formato_monto(monto) -> str:
         return str(monto)
 
 
+_CONFIRMACION = {
+    "bloquear_tarjeta": lambda d: d.get("bloqueada") is True,
+    "iniciar_disputa": lambda d: bool(d.get("id_disputa")),
+    "escalar_a_analista": lambda d: bool(d.get("id_caso")),
+}
+
+
 def _datos(evento: Evento) -> dict:
     return evento.detalle if isinstance(evento.detalle, dict) else {}
 
@@ -46,10 +53,17 @@ def _indicador(evento: Evento) -> Indicador:
         tipo, codigo = datos.get("tipo"), datos.get("codigo")
         if tipo == "TRANSITORIO":
             return Indicador(
-                False, "🔁", "Falla transitoria del banco", f"{nombre} · se reintenta", "yellow"
+                False, "🔁", "Falla transitoria del banco", f"{nombre} · reintentable", "yellow"
             )
+        if not (codigo or tipo):
+            return Indicador(False, "⚠", "Error sin detalle", nombre, "yellow")
         return Indicador(False, "⚠", "El banco rechazó", f"{nombre} · {codigo or tipo}", "yellow")
+    if evento.resultado != "ok":
+        return Indicador(False, "•", nombre, str(evento.resultado), "dim")
 
+    if nombre in _CONFIRMACION and not _CONFIRMACION[nombre](datos):
+        # Una acción principal solo se afirma si el banco la confirmó en su respuesta.
+        return Indicador(False, "❔", "Resultado no confirmado", nombre, "yellow")
     if nombre == "bloquear_tarjeta":
         detalle = f"•••• {datos.get('ultimos4', '?')}"
         if datos.get("ya_estaba_bloqueada"):

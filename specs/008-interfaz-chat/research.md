@@ -23,11 +23,16 @@
 | `verificar_identidad` ok | ✅ Identidad verificada · nombre / ⚠ Verificación fallida · intentos | secundario |
 | `delegado` | 🤝 Análisis delegado a analista-transacciones | secundario |
 | `consultar_transacciones` ok | 📋 Consulta de transacciones · n (agente) | secundario |
-| error `TRANSITORIO` | 🔁 Falla transitoria del banco · se reintenta | secundario |
-| otro error | ⚠ El banco rechazó · herramienta · código | secundario |
+| error `TRANSITORIO` | 🔁 Falla transitoria del banco · reintentable | secundario |
+| otro error | ⚠ El banco rechazó · herramienta · código (sin código ni tipo: ⚠ Error sin detalle) | secundario |
+| acción principal ok sin confirmación del banco (`bloqueada is True`, `id_disputa`, `id_caso`) | ❔ Resultado no confirmado · herramienta | secundario |
 
 - **Rationale**: lo que se ve en pantalla sale de lo que realmente ejecutaron el agente, el
-  servidor y las garantías; el texto del modelo podría contradecirlo.
+  servidor y las garantías; el texto del modelo podría contradecirlo. Una acción principal solo
+  se afirma si la respuesta del banco la confirma.
+- La **causa** del escalamiento se toma de los argumentos con que el modelo llamó a
+  `escalar_a_analista` (el servidor no la devuelve). Es solo informativa: el caso y su
+  identificador sí salen de la respuesta del banco.
 - Montos en COP con separador de miles por punto (`$1.250.000`).
 
 ## R3. Bucle y guion

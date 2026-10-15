@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 from rich.console import Console
 
@@ -64,7 +66,83 @@ def test_main_sin_agente_disponible_muestra_mensaje(capsys):
             pass
 
     codigo = app.main([], fabrica_agente=SinAgente)
-    salida = capsys.readouterr().out
+    salida = capsys.readouterr()
     assert codigo == 1
-    assert "No se pudo iniciar el agente" in salida
-    assert "Traceback" not in salida
+    assert "No se pudo iniciar el agente" in salida.out
+    assert "Traceback" not in salida.err
+
+
+class AgenteConEstado:
+    """Agente falso con estado: el turno cancelado ya registró un bloqueo en la sesión."""
+
+    def __init__(self):
+        from agent.garantias import EstadoSesion
+
+        self.estado = EstadoSesion(transacciones={})
+
+    async def responder(self, texto):
+        self.estado.eventos.append(
+            Evento("bloquear_tarjeta", {}, "ok", {"bloqueada": True, "ultimos4": "4821"})
+        )
+        raise asyncio.CancelledError  # lo que produce Ctrl+C a mitad del turno
+
+
+async def test_ctrl_c_durante_un_turno_muestra_el_resumen_con_lo_hecho():
+    consola = _consola()
+    await app.conversar(AgenteConEstado(), iter(["hola", "otro"]), consola)
+    texto = consola.export_text()
+    assert "interrumpida" in texto
+    assert "TARJETA BLOQUEADA" in texto.split("Resumen")[-1]
+
+
+async def test_ctrl_c_en_el_prompt_muestra_el_resumen():
+    def entradas():
+        yield "hola"
+        raise KeyboardInterrupt  # Ctrl+C mientras se espera el siguiente mensaje
+
+    agente, consola = AgenteFalso(), _consola()
+    await app.conversar(agente, entradas(), consola)
+    texto = consola.export_text()
+    assert "interrumpida" in texto
+    assert "DISPUTA ABIERTA" in texto.split("Resumen")[-1]
+
+
+async def test_turno_con_error_avisa_y_termina():
+    class ConError:
+        async def responder(self, texto):
+            return Turno(texto="Credenciales inválidas", eventos=[], error=True)
+
+    consola = _consola()
+    await app.conversar(ConError(), iter(["hola", "otro"]), consola)
+    texto = consola.export_text()
+    assert "Aviso del sistema" in texto and "Credenciales inválidas" in texto
+    assert "Agente Banco Andino" not in texto
+
+
+async def test_error_del_sdk_a_mitad_de_sesion():
+    from claude_agent_sdk import CLIConnectionError
+
+    class Caido:
+        async def responder(self, texto):
+            raise CLIConnectionError("se cayó")
+
+    consola = _consola()
+    await app.conversar(Caido(), iter(["hola"]), consola)
+    texto = consola.export_text()
+    assert "dejó de responder" in texto and "Resumen de la sesión" in texto
+
+
+def test_guion_inexistente_da_mensaje_claro(tmp_path, capsys):
+    codigo = app.main(["--guion", str(tmp_path / "no_existe.txt")], fabrica_agente=AgenteFalso)
+    salida = capsys.readouterr()
+    assert codigo == 2
+    assert "No se pudo leer el guion" in salida.out
+    assert "Traceback" not in salida.err
+
+
+def test_eof_del_teclado_termina_las_entradas():
+    class SinEntrada:
+        def input(self, *a):
+            raise EOFError
+
+    assert list(app.entradas_de_teclado(SinEntrada())) == []

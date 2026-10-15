@@ -132,7 +132,7 @@ def test_detalles_de_secundarios():
 
 def test_orden_y_resumen():
     eventos = [
-        Evento("bloquear_tarjeta", {}, "ok", {"ultimos4": "4821"}),
+        Evento("bloquear_tarjeta", {}, "ok", {"bloqueada": True, "ultimos4": "4821"}),
         Evento(
             "iniciar_disputa",
             {},
@@ -157,10 +157,27 @@ def test_orden_y_resumen():
     }
 
 
-def test_datos_inesperados_no_rompen():
-    assert (
-        desde_eventos([Evento("iniciar_disputa", {}, "ok", None)])[0].etiqueta == "DISPUTA ABIERTA"
-    )
+@pytest.mark.parametrize("nombre", ["iniciar_disputa", "bloquear_tarjeta", "escalar_a_analista"])
+def test_accion_sin_confirmacion_del_banco_no_se_afirma(nombre):
+    (indicador,) = desde_eventos([Evento(nombre, {}, "ok", None)])
+    assert indicador.principal is False
+    assert indicador.etiqueta == "Resultado no confirmado"
+
+
+@pytest.mark.parametrize("herramienta", ["Agent", "Task", "desconocida"])
+def test_negaciones_de_las_garantias(herramienta):
+    (indicador,) = desde_eventos([Evento(herramienta, {}, "negado", "motivo")])
+    assert (indicador.etiqueta, indicador.principal) == ("NEGADO", True)
+
+
+def test_error_sin_detalle_no_se_atribuye_al_banco():
+    (indicador,) = desde_eventos([Evento("bloquear_tarjeta", {}, "error", {"tipo": None})])
+    assert indicador.etiqueta == "Error sin detalle"
+
+
+def test_formato_monto_con_valor_no_numerico():
+    assert formato_monto(None) == "None"
+    assert formato_monto("abc") == "abc"
 
 
 def test_singular_y_plural_de_coincidencias():
