@@ -24,3 +24,22 @@
 | 8 | BAJA | Faltaba la regla 5 general y qué hacer ante fraude sin verificar. | **Corregido** en el prompt con su test. |
 | 9 | BAJA | Los tests del prompt solo buscan frases. | **Aceptado**: la cobertura de comportamiento es la verificación en vivo (D1–D6) y los e2e del #9. |
 | 10 | BAJA | Contrato, R7 y T002 desactualizados. | **Corregido**. |
+
+## Revisión de cumplimiento (`/revisar-cumplimiento`, fork con `compliance-auditor`)
+
+- **Fecha**: 2026-10-15 · **Estado revisado**: `53f281b`. **Veredicto**: **CUMPLE**.
+
+| Principio/Regla | Resultado | Evidencia (resumen del auditor) |
+|---|---|---|
+| I.1 Identidad primero | CUMPLE | Herramientas protegidas; niega sin verificado o con otro `id_cliente`; pertenencia de transacción/tarjeta con datos del core. |
+| I.2 Umbral $500.000 | CUMPLE | Monto del core por `id_transaccion`; `monto` inventado ignorado; 500 000 exactos permitidos; transacción desconocida negada. |
+| I.3 Bloqueo inmediato | CUMPLE | Prompt (sin confirmación, verificar primero) + descripción de la herramienta + hook de identidad. |
+| I.4 Persona a pedido | CUMPLE | Prompt + verificación en vivo D1. |
+| I.5 Fuera de política | CUMPLE | Prompt (código y caso general) + descripción. |
+| **II. Garantizado, no sugerido** | **CUMPLE** | Hooks `PreToolUse`/`PostToolUse`/`PostToolUseFailure` registrados; verificado solo por `PostToolUse` exitoso del mismo cliente; bloqueo o error ilegible lo retiran; fail-closed; aislamiento (`tools=[]`, `strict_mcp_config`, `setting_sources=[]`). El prompt no es lo que impone las reglas. |
+| III. Datos ficticios | CUMPLE | Sin secuencias de 6+ dígitos ni patrones de credenciales en el diff. |
+| IV. Spec primero | CUMPLE | spec, plan, tasks y review presentes; ligada al #6. |
+
+Observación menor (data-model sin `EstadoSesion.tarjetas`): **corregida**.
+
+**Condición heredada del #5 (principio II en CUMPLE): satisfecha.**

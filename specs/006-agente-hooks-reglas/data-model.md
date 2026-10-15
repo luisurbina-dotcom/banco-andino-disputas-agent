@@ -6,6 +6,7 @@
 |---|---|---|
 | `verificado` | `str \| None` | `id_cliente` verificado; solo lo fija `post_resultado` con `verificado is True` |
 | `transacciones` | `dict[id_transaccion, dict]` | Datos del core en solo lectura (monto, tarjeta) |
+| `tarjetas` | `dict[id_tarjeta, dict]` | Datos del core en solo lectura (titular, últimos 4): pertenencia del producto |
 | `eventos` | `list[Evento]` | Todas las llamadas de la conversación |
 
 ## Evento
