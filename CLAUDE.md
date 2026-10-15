@@ -12,7 +12,7 @@ Python 3.12 con uv.
 - `uv sync` instala dependencias.
 - `uv run pytest` corre los tests unitarios (sin red ni API key).
 - `uv run pytest -m e2e` corre los casos end-to-end (objetivo, issue #9; requiere `ANTHROPIC_API_KEY`).
-- `uv run python -m chat` arranca la interfaz de chat (objetivo, issue #8).
+- `uv run python -m chat [--guion archivo]` arranca la interfaz de chat.
 - Hooks de equipo en `.claude/hooks/` (datos ficticios, spec primero, secretos, formateo).
 
 ## Estructura
