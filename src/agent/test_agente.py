@@ -16,17 +16,24 @@ def test_opciones_aislan_al_agente_y_registran_las_garantias(estado):
     assert opciones.mcp_servers == {
         "banco": {"type": "stdio", "command": sys.executable, "args": ["-m", "mcp_server"]}
     }
-    assert opciones.allowed_tools == HERRAMIENTAS
+    assert opciones.allowed_tools == [*HERRAMIENTAS, "Agent"]
     assert len(HERRAMIENTAS) == 6
     assert all(h.startswith("mcp__banco__") for h in HERRAMIENTAS)
-    assert opciones.tools == []
+    assert opciones.tools == ["Agent"]  # solo la delegación; ninguna integrada de archivos/shell
+    assert "Agent" in opciones.allowed_tools
+    assert set(opciones.agents) == {"analista-transacciones"}
+    (delegacion,) = [m for m in opciones.hooks["PreToolUse"] if m.matcher == "Agent|Task"]
+    assert delegacion.hooks[0].__qualname__.startswith("pre_delegacion")
+    (guardia,) = [m for m in opciones.hooks["PreToolUse"] if m.matcher is None]
+    assert guardia.hooks[0].__qualname__.startswith("pre_herramientas_permitidas")
+    assert len(opciones.hooks["PreToolUse"]) == 3
+    assert len(opciones.hooks["PostToolUse"]) == len(opciones.hooks["PostToolUseFailure"]) == 1
     assert opciones.strict_mcp_config is True  # sin conectores MCP heredados de la cuenta
     assert opciones.setting_sources == []
     assert opciones.max_turns is None  # el turno lo cierra la razón de parada, no un tope
     for evento in ("PreToolUse", "PostToolUse", "PostToolUseFailure"):
-        (matcher,) = opciones.hooks[evento]
-        assert matcher.matcher == "mcp__banco__.*"
-        assert len(matcher.hooks) == 1
+        banco = [m for m in opciones.hooks[evento] if m.matcher == "mcp__banco__.*"]
+        assert len(banco) == 1 and len(banco[0].hooks) == 1
 
 
 class ClienteFalso:
@@ -149,3 +156,10 @@ async def test_el_directorio_temporal_se_limpia_al_salir(estado):
         cwd = agente._cliente.options.cwd
         assert os.path.isdir(cwd)
     assert not os.path.exists(cwd)
+
+
+async def test_la_guardia_real_deja_pasar_el_flujo_normal(estado):
+    opciones = construir_opciones(estado)
+    (guardia,) = [m for m in opciones.hooks["PreToolUse"] if m.matcher is None]
+    for herramienta in [*HERRAMIENTAS, "Agent", "Task"]:
+        assert await guardia.hooks[0]({"tool_name": herramienta}, "t", None) == {}

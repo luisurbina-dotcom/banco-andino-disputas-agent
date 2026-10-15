@@ -32,6 +32,10 @@ MOTIVO_TX_DESCONOCIDA = (
     "La transacción no existe en el core; consulta las transacciones del cliente antes de disputar."
 )
 MOTIVO_FALLO = "Garantía no disponible; la operación se niega por seguridad."
+MOTIVO_DELEGACION = "Solo puedes delegar en el subagente analista-transacciones."
+MOTIVO_SUBAGENTE = "El analista de transacciones solo puede consultar transacciones."
+MOTIVO_HERRAMIENTA_AJENA = "Herramienta no permitida para el agente de disputas."
+SUBAGENTE_ANALISTA = "analista-transacciones"
 MOTIVO_PRODUCTO_AJENO = (
     "Regla 1: la tarjeta o la transacción no pertenece al cliente verificado en esta conversación."
 )
@@ -41,8 +45,9 @@ MOTIVO_PRODUCTO_AJENO = (
 class Evento:
     herramienta: str
     argumentos: dict
-    resultado: str  # "ok" | "error" | "negado"
+    resultado: str  # "ok" | "error" | "negado" | "delegado"
     detalle: object = None
+    agente: str = "principal"  # o el agent_type del subagente que hizo la llamada
 
 
 @dataclass
@@ -62,8 +67,14 @@ class EstadoSesion:
         )
 
 
-def _nombre(entrada: dict) -> str:
+def _nombre(entrada) -> str:
+    if not isinstance(entrada, dict):
+        return ""
     return str(entrada.get("tool_name", "")).removeprefix(PREFIJO)
+
+
+def _agente(entrada) -> str:
+    return (entrada.get("agent_type") if isinstance(entrada, dict) else None) or "principal"
 
 
 def _negar(motivo: str) -> dict:
@@ -125,15 +136,20 @@ def _motivo_de_negacion(estado: EstadoSesion, nombre: str, argumentos: dict) -> 
 
 def pre_reglas(estado: EstadoSesion):
     async def hook(entrada: dict, tool_use_id, contexto) -> dict:
+        agente = "principal"
         try:
+            agente = _agente(entrada)
             nombre = _nombre(entrada)
             argumentos = entrada.get("tool_input") or {}
-            motivo = _motivo_de_negacion(estado, nombre, argumentos)
+            if agente != "principal" and nombre != "consultar_transacciones":
+                motivo = MOTIVO_SUBAGENTE  # un subagente solo consulta (lista permitida)
+            else:
+                motivo = _motivo_de_negacion(estado, nombre, argumentos)
         except Exception:  # fail-closed: un error interno nunca abre el paso
             nombre, argumentos, motivo = "desconocida", {}, MOTIVO_FALLO
         if motivo is None:
             return {}
-        estado.eventos.append(Evento(nombre, argumentos, "negado", motivo))
+        estado.eventos.append(Evento(nombre, argumentos, "negado", motivo, agente))
         return _negar(motivo)
 
     return hook
@@ -142,6 +158,7 @@ def pre_reglas(estado: EstadoSesion):
 def post_resultado(estado: EstadoSesion):
     async def hook(entrada: dict, tool_use_id, contexto) -> dict:
         try:
+            agente = _agente(entrada)
             nombre = _nombre(entrada)
             argumentos = entrada.get("tool_input") or {}
             if entrada.get("hook_event_name") == "PostToolUseFailure":
@@ -154,7 +171,7 @@ def post_resultado(estado: EstadoSesion):
                 error = (datos or {}).get("error")
                 error = error if isinstance(error, dict) else {}
                 detalle = {"tipo": error.get("tipo"), "codigo": error.get("codigo")}
-                estado.eventos.append(Evento(nombre, argumentos, "error", detalle))
+                estado.eventos.append(Evento(nombre, argumentos, "error", detalle, agente))
                 # Fail-closed: un bloqueo, o un error ilegible de verificar_identidad, retira
                 # la verificación (no se confía en interpretar bien el formato del error).
                 if detalle["codigo"] == "IDENTIDAD_BLOQUEADA" or (
@@ -162,7 +179,7 @@ def post_resultado(estado: EstadoSesion):
                 ):
                     estado.verificado = None
                 return {}
-            estado.eventos.append(Evento(nombre, argumentos, "ok", datos))
+            estado.eventos.append(Evento(nombre, argumentos, "ok", datos, agente))
             if (
                 nombre == "verificar_identidad"
                 and isinstance(datos, dict)
@@ -173,5 +190,58 @@ def post_resultado(estado: EstadoSesion):
         except Exception:  # fail-closed: ante la duda, la sesión deja de estar verificada
             estado.verificado = None
         return {}
+
+    return hook
+
+
+def pre_delegacion(estado: EstadoSesion):
+    """PreToolUse sobre la herramienta de delegación: solo el analista de transacciones."""
+
+    async def hook(entrada: dict, tool_use_id, contexto) -> dict:
+        try:
+            argumentos = entrada.get("tool_input") or {}
+            # Solo el agente principal delega, y solo en el analista (sin delegación anidada).
+            permitido = (
+                _agente(entrada) == "principal"
+                and argumentos.get("subagent_type") == SUBAGENTE_ANALISTA
+            )
+        except Exception:  # fail-closed
+            argumentos, permitido = {}, False
+        agente = _agente(entrada)
+        if permitido:
+            estado.eventos.append(
+                Evento(SUBAGENTE_ANALISTA, argumentos, "delegado", argumentos.get("prompt"), agente)
+            )
+            return {}
+        estado.eventos.append(
+            Evento(_nombre(entrada) or "Agent", argumentos, "negado", MOTIVO_DELEGACION, agente)
+        )
+        return _negar(MOTIVO_DELEGACION)
+
+    return hook
+
+
+def pre_herramientas_permitidas(estado: EstadoSesion, permitidas: set[str]):
+    """PreToolUse sin matcher: niega cualquier herramienta fuera de la lista permitida, la llame
+    el agente principal o un subagente (defensa si cambia la configuración de herramientas)."""
+
+    async def hook(entrada: dict, tool_use_id, contexto) -> dict:
+        try:
+            permitido = entrada.get("tool_name") in permitidas
+        except Exception:  # fail-closed
+            permitido = False
+        if permitido:
+            return {}
+        argumentos = entrada.get("tool_input") if isinstance(entrada, dict) else None
+        estado.eventos.append(
+            Evento(
+                _nombre(entrada) or "desconocida",
+                argumentos if isinstance(argumentos, dict) else {},
+                "negado",
+                MOTIVO_HERRAMIENTA_AJENA,
+                _agente(entrada),
+            )
+        )
+        return _negar(MOTIVO_HERRAMIENTA_AJENA)
 
     return hook

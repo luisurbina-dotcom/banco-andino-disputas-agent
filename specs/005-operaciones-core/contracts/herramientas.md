@@ -16,7 +16,9 @@ responder `TRANSITORIO/CORE_NO_DISPONIBLE` (`reintentable: true`) si hay fallas 
 
 **Entrada**: `id_cliente`, `ultimos4`, `desde` (opcional), `hasta` (opcional).
 
-**Salida**: `{"transacciones": [{"id_transaccion", "fecha", "monto", "comercio", "pais"}], "total": n}`
+**Salida**: `{"fecha_base", "transacciones": [{"id_transaccion", "fecha", "antiguedad_dias",
+"monto", "comercio", "pais"}], "total": n}`. `fecha_base` y `antiguedad_dias` se agregaron en el
+#7 para que el analista evalúe la política de 90 días sin conocer la fecha del core.
 
 **Errores**: `PERMISOS/IDENTIDAD_NO_VERIFICADA`, `VALIDACION/TARJETA_NO_ENCONTRADA`,
 `VALIDACION/RANGO_INVALIDO`.
@@ -73,7 +75,9 @@ modelo, para no abrir una vía de lectura de datos sin identidad verificada.
 **Errores**: `VALIDACION/RESUMEN_INCOMPLETO` (descripción o acción recomendada vacías, o causa
 fuera de las 5 en llamadas directas al core; por MCP la restringe el esquema),
 `VALIDACION/TRANSACCION_NO_ENCONTRADA` (inexistente o de otro cliente),
-`VALIDACION/CLIENTE_NO_EXISTE`. Incluir transacciones exige `id_cliente`.
+`VALIDACION/CLIENTE_NO_EXISTE`. Incluir transacciones exige `id_cliente`. Ampliación del #7:
+las causas `MONTO_SUPERA_UMBRAL` y `POLITICA_NO_CUBRE` exigen `id_cliente` y al menos una
+transacción (si no, `RESUMEN_INCOMPLETO`).
 
 ## Configuración
 

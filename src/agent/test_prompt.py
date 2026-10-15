@@ -40,3 +40,24 @@ def test_no_contiene_datos_con_forma_real():
 def test_regla5_general_y_fraude_sin_verificar():
     assert "si la política no cubre el caso" in PROMPT_SISTEMA.lower()
     assert "verifica primero" in PROMPT_SISTEMA
+
+
+def test_delega_el_analisis_con_encargo_explicito():
+    texto = " ".join(PROMPT_SISTEMA.split())
+    assert "delega en el subagente analista-transacciones" in texto
+    assert "el encargo debe incluir el id_cliente verificado, los ultimos4" in texto
+
+
+def test_actua_segun_la_recomendacion():
+    texto = " ".join(PROMPT_SISTEMA.split())
+    assert "DISPUTA_AUTOMATICA → iniciar_disputa" in texto
+    assert "ESCALAR_UMBRAL o ESCALAR_POLITICA → escalar_a_analista" in texto
+    assert "PEDIR_DATOS → pregunta al cliente" in texto
+
+
+def test_escalar_por_umbral_o_politica_con_cliente_y_transacciones():
+    texto = " ".join(PROMPT_SISTEMA.split())
+    assert (
+        "MONTO_SUPERA_UMBRAL o POLITICA_NO_CUBRE, el id_cliente y los id_transacciones son "
+        "obligatorios" in texto
+    )

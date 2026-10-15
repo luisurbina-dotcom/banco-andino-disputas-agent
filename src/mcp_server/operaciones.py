@@ -40,10 +40,11 @@ def _fecha(texto: str | None, por_defecto: date) -> date:
     return date.fromisoformat(texto)
 
 
-def _transaccion_publica(tx: dict) -> dict:
+def _transaccion_publica(tx: dict, fecha_base: date) -> dict:
     return {
         "id_transaccion": tx["id_transaccion"],
         "fecha": tx["fecha"].isoformat(),
+        "antiguedad_dias": (fecha_base - tx["fecha"]).days,
         "monto": tx["monto"],
         "comercio": tx["comercio"],
         "pais": tx["pais"],
@@ -99,11 +100,15 @@ class Operaciones:
         if desde_f > hasta_f:
             raise _validacion("RANGO_INVALIDO", "La fecha inicial es posterior a la final.")
         transacciones = [
-            _transaccion_publica(tx)
+            _transaccion_publica(tx, base)
             for tx in sorted(self.core.datos.transacciones, key=lambda t: t["fecha"])
             if tx["id_tarjeta"] == tarjeta["id_tarjeta"] and desde_f <= tx["fecha"] <= hasta_f
         ]
-        return {"transacciones": transacciones, "total": len(transacciones)}
+        return {
+            "fecha_base": base.isoformat(),
+            "transacciones": transacciones,
+            "total": len(transacciones),
+        }
 
     def iniciar_disputa(self, id_cliente: str, id_transaccion: str, motivo: str) -> dict:
         self.core.consumir_falla("iniciar_disputa")
@@ -167,6 +172,14 @@ class Operaciones:
                 "RESUMEN_INCOMPLETO",
                 "El caso necesita una causa válida, una descripción y una acción recomendada.",
             )
+        if causa in ("MONTO_SUPERA_UMBRAL", "POLITICA_NO_CUBRE") and (
+            id_cliente is None or not id_transacciones
+        ):
+            raise _validacion(
+                "RESUMEN_INCOMPLETO",
+                "Para escalar por umbral o política indica el cliente y las transacciones "
+                "del caso.",
+            )
         if id_transacciones and id_cliente is None:
             raise _validacion(
                 "RESUMEN_INCOMPLETO", "Indica el cliente al incluir transacciones en el caso."
@@ -191,7 +204,7 @@ class Operaciones:
                     "TRANSACCION_NO_ENCONTRADA",
                     f"La transacción {id_tx} no pertenece a las tarjetas del cliente.",
                 )
-            transacciones.append(_transaccion_publica(tx))
+            transacciones.append(_transaccion_publica(tx, self.core.datos.fecha_base))
         caso = {
             "id_caso": f"CASO-{len(self.core.casos) + 1:04d}",
             "estado": "en_cola_analista",

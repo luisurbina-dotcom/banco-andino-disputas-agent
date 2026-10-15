@@ -22,7 +22,8 @@ async def main(mensajes: list[str]) -> None:
             for evento in turno.eventos:
                 detalle = json.dumps(evento.detalle, ensure_ascii=False, default=str)[:160]
                 print(
-                    f"  [{evento.resultado:7}] {evento.herramienta} {evento.argumentos} → {detalle}"
+                    f"  [{evento.resultado:8}] {evento.herramienta} ({evento.agente}) "
+                    f"{evento.argumentos} → {detalle}"
                 )
             print(f"Agente: {turno.texto}")
 

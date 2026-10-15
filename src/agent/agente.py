@@ -24,7 +24,15 @@ from claude_agent_sdk import (
     TextBlock,
 )
 
-from agent.garantias import EstadoSesion, Evento, post_resultado, pre_reglas
+from agent import subagente
+from agent.garantias import (
+    EstadoSesion,
+    Evento,
+    post_resultado,
+    pre_delegacion,
+    pre_herramientas_permitidas,
+    pre_reglas,
+)
 from agent.prompt import PROMPT_SISTEMA
 
 HERRAMIENTAS = [
@@ -72,13 +80,22 @@ def construir_opciones(
         # Solo el servidor banco: sin esto se heredan los conectores MCP de la cuenta del
         # desarrollador (p. ej. Drive), comprobado en vivo.
         strict_mcp_config=True,
-        allowed_tools=list(HERRAMIENTAS),
-        tools=[],  # sin herramientas integradas (archivos, shell): solo las del banco
+        allowed_tools=[*HERRAMIENTAS, "Agent"],
+        # Solo la herramienta de delegación: ninguna integrada de archivos ni shell.
+        tools=["Agent"],
+        agents={subagente.NOMBRE: subagente.definicion()},
         setting_sources=[],  # no hereda CLAUDE.md, reglas ni hooks de desarrollo del repo
         cwd=cwd or tempfile.gettempdir(),
         model=modelo or os.environ.get("BANCO_MODELO") or None,
         hooks={
-            "PreToolUse": [HookMatcher(matcher=MATCHER_BANCO, hooks=[pre_reglas(estado)])],
+            "PreToolUse": [
+                HookMatcher(
+                    matcher=None,
+                    hooks=[pre_herramientas_permitidas(estado, {*HERRAMIENTAS, "Agent", "Task"})],
+                ),
+                HookMatcher(matcher=MATCHER_BANCO, hooks=[pre_reglas(estado)]),
+                HookMatcher(matcher="Agent|Task", hooks=[pre_delegacion(estado)]),
+            ],
             "PostToolUse": [HookMatcher(matcher=MATCHER_BANCO, hooks=[post])],
             "PostToolUseFailure": [HookMatcher(matcher=MATCHER_BANCO, hooks=[post])],
         },

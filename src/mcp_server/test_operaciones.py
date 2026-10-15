@@ -43,7 +43,16 @@ def test_consultar_ayer_devuelve_los_dos_cobros(ops, verificado):
     assert r["total"] == 2
     assert sorted(tx["monto"] for tx in r["transacciones"]) == [180_000, 1_250_000]
     assert {tx["fecha"] for tx in r["transacciones"]} == {"2026-10-14"}
-    assert set(r["transacciones"][0]) == {"id_transaccion", "fecha", "monto", "comercio", "pais"}
+    assert set(r["transacciones"][0]) == {
+        "id_transaccion",
+        "fecha",
+        "antiguedad_dias",
+        "monto",
+        "comercio",
+        "pais",
+    }
+    assert r["fecha_base"] == "2026-10-15"
+    assert {tx["antiguedad_dias"] for tx in r["transacciones"]} == {1}
 
 
 def test_consultar_sin_rango_usa_los_ultimos_30_dias(ops, verificado):
@@ -53,7 +62,7 @@ def test_consultar_sin_rango_usa_los_ultimos_30_dias(ops, verificado):
 
 def test_rango_sin_datos_es_lista_vacia(ops, verificado):
     r = ops.consultar_transacciones(verificado, "4821", desde="2026-01-01", hasta="2026-01-31")
-    assert r == {"transacciones": [], "total": 0}
+    assert r == {"fecha_base": "2026-10-15", "transacciones": [], "total": 0}
 
 
 @pytest.mark.parametrize(
@@ -211,6 +220,7 @@ def test_escalar_completa_el_resumen_con_datos_del_core(ops, core):
         {
             "id_transaccion": "TX-0002",
             "fecha": "2026-10-14",
+            "antiguedad_dias": 1,
             "monto": 1_250_000,
             "comercio": "Electro Ficticio SAS",
             "pais": "CO",
@@ -292,3 +302,28 @@ def test_la_falla_transitoria_va_antes_que_cualquier_validacion(
         with pytest.raises(ErrorCore) as e:
             llamada(ops)
         assert e.value.tipo == despues
+
+
+# --- #7: handoff completo por umbral o política ---
+
+
+@pytest.mark.parametrize("causa", ["MONTO_SUPERA_UMBRAL", "POLITICA_NO_CUBRE"])
+@pytest.mark.parametrize(
+    "extra", [{}, {"id_cliente": "CLI-001"}, {"id_cliente": "CLI-001", "id_transacciones": []}]
+)
+def test_umbral_o_politica_exigen_cliente_y_transacciones(ops, causa, extra):
+    with pytest.raises(ErrorCore) as e:
+        ops.escalar_a_analista(causa, "d", "a", **extra)
+    assert _error(e) == ("VALIDACION", "RESUMEN_INCOMPLETO", False)
+
+
+def test_umbral_completo_crea_el_caso(ops):
+    r = ops.escalar_a_analista(
+        "MONTO_SUPERA_UMBRAL", "d", "a", id_cliente="CLI-001", id_transacciones=["TX-0002"]
+    )
+    assert r["estado"] == "en_cola_analista"
+
+
+@pytest.mark.parametrize("causa", ["CLIENTE_PIDE_PERSONA", "IDENTIDAD_BLOQUEADA"])
+def test_persona_o_bloqueo_no_exigen_transacciones(ops, causa):
+    assert ops.escalar_a_analista(causa, "d", "a")["estado"] == "en_cola_analista"
