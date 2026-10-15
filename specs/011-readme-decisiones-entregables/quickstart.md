@@ -29,3 +29,4 @@ Tras la revisión independiente:
 | Q1′ | ✅ Clon limpio de la rama final con `UV_CACHE_DIR` vacío: clon + `uv sync` 4 s, 433 tests en 12 s, primera respuesta del chat en 9 s; total 25 s |
 | Q4′ | ✅ El empaquetado revisa todo el historial: detectó un ejemplo con forma de cédula en `9f25fd6` (#2, previo al hook). El autor aceptó la excepción, fijada por hash del blob; el paquete se genera (2,1 MB, 1190 archivos) y cualquier otro hallazgo histórico se sigue rechazando |
 | Q7′ | ✅ 433 tests (22 del empaquetado: historial, URL con token, enlaces simbólicos, credenciales, excepción por hash) |
+| Q4″ | ✅ Tras la re-revisión (clon `--no-local`, revisión de todos los objetos, commits y tags): paquete de 1,1 MB y 240 archivos; descomprimido con `unzip`: 94 commits, `git fsck` limpio, árbol limpio, 14 ramas; 27 tests del empaquetado |

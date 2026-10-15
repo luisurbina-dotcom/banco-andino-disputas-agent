@@ -182,16 +182,84 @@ def test_excepcion_historica_permite_solo_el_blob_exacto(tmp_path, monkeypatch):
     subprocess.run([*GIT, "commit", "-qam", "corrige el ejemplo"], cwd=repo, check=True)
     with pytest.raises(empaquetar.PaqueteInvalido, match="historial"):
         empaquetar.empaquetar(repo, tmp_path / "p.zip")
-    monkeypatch.setattr(empaquetar, "EXCEPCIONES_HISTORIAL", {blob})
+    monkeypatch.setattr(empaquetar, "EXCEPCIONES_HISTORIAL", {blob: empaquetar.MOTIVO_FORMA_REAL})
     empaquetar.empaquetar(repo, tmp_path / "p.zip")
 
 
-def test_la_excepcion_del_repo_apunta_a_un_blob_que_existe():
-    for blob in empaquetar.EXCEPCIONES_HISTORIAL:
-        tipo = subprocess.run(
-            ["git", "cat-file", "-t", blob],
+def _es_superficial() -> bool:
+    salida = subprocess.run(
+        ["git", "rev-parse", "--is-shallow-repository"],
+        cwd=empaquetar.RAIZ_REPO,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    return salida == "true"
+
+
+@pytest.mark.skipif(_es_superficial(), reason="clon superficial: el blob histórico no está")
+def test_la_excepcion_del_repo_cubre_solo_su_blob_y_su_motivo():
+    for blob, motivo in empaquetar.EXCEPCIONES_HISTORIAL.items():
+        contenido = subprocess.run(
+            ["git", "cat-file", "blob", blob],
             cwd=empaquetar.RAIZ_REPO,
             capture_output=True,
             text=True,
-        ).stdout.strip()
-        assert tipo == "blob", blob
+            check=True,
+        ).stdout
+        assert empaquetar._motivos_por_contenido(contenido) == [motivo]
+
+
+def test_excepcion_no_tapa_otro_motivo_del_mismo_blob(tmp_path, monkeypatch):
+    token = "gh" + "p_" + "A1b2C3d4E5" * 4
+    repo = _repo(tmp_path, {"datos.md": f"Tarjeta {_tarjeta_con_forma_real()} {token}\n"})
+    blob = subprocess.run(
+        ["git", "rev-parse", "HEAD:datos.md"], cwd=repo, capture_output=True, text=True
+    ).stdout.strip()
+    monkeypatch.setattr(empaquetar, "EXCEPCIONES_HISTORIAL", {blob: empaquetar.MOTIVO_FORMA_REAL})
+    with pytest.raises(empaquetar.PaqueteInvalido, match="posible credencial") as error:
+        empaquetar.empaquetar(repo, tmp_path / "p.zip")
+    assert "forma real" not in str(error.value)
+
+
+def test_objetos_inalcanzables_no_viajan_en_el_paquete(tmp_path):
+    token = "gh" + "p_" + "A1b2C3d4E5" * 4
+    repo = _repo(tmp_path, {"README.md": "# P"})
+    (repo / "config.py").write_text(f'T = "{token}"\n', encoding="utf-8")
+    subprocess.run([*GIT, "add", "config.py"], cwd=repo, check=True)
+    blob = subprocess.run(
+        ["git", "rev-parse", ":config.py"], cwd=repo, capture_output=True, text=True
+    ).stdout.strip()
+    subprocess.run([*GIT, "reset", "-q"], cwd=repo, check=True)
+    (repo / "config.py").unlink()
+    salida = tmp_path / "p.zip"
+    empaquetar.empaquetar(repo, salida)  # el blob quedó suelto e inalcanzable en el original
+    destino = tmp_path / "extraido"
+    zipfile.ZipFile(salida).extractall(destino)
+    existe = subprocess.run(
+        ["git", "cat-file", "-e", blob], cwd=destino / empaquetar.NOMBRE, capture_output=True
+    )
+    assert existe.returncode != 0
+
+
+def test_mensaje_de_commit_con_credencial_se_rechaza(tmp_path):
+    repo = _repo(tmp_path, {"README.md": "# P"})
+    (repo / "README.md").write_text("# P2", encoding="utf-8")
+    token = "gh" + "p_" + "A1b2C3d4E5" * 4
+    subprocess.run([*GIT, "commit", "-qam", f"usa {token}"], cwd=repo, check=True)
+    with pytest.raises(empaquetar.PaqueteInvalido, match="commit .* posible credencial"):
+        empaquetar.empaquetar(repo, tmp_path / "p.zip")
+
+
+def test_paquete_sin_reflog_con_la_ruta_local(tmp_path):
+    repo = _repo(tmp_path, {"README.md": "# P"})
+    salida = tmp_path / "p.zip"
+    empaquetar.empaquetar(repo, salida)
+    nombres = zipfile.ZipFile(salida).namelist()
+    assert not any("/.git/logs/" in n for n in nombres)
+
+
+def test_aviso_si_no_se_empaqueta_desde_main(tmp_path, capsys):
+    repo = _repo(tmp_path, {"README.md": "# P"})
+    subprocess.run([*GIT, "switch", "-q", "-c", "otra"], cwd=repo, check=True)
+    assert empaquetar.main([str(repo), "--salida", str(tmp_path / "p.zip")]) == 0
+    assert "rama otra" in capsys.readouterr().err

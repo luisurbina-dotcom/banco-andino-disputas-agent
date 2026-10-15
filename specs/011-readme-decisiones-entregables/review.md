@@ -23,3 +23,29 @@
 | 12 | BAJA | La falla cerrada se atribuía solo a `onFailure`. | **Corregido**: `ejecutar_seguro` como garantía y `onFailure` para timeouts. |
 | 13 | BAJA | Q1 no corrió sobre el árbol final y con caché caliente. | **Corregido**: Q1′ con caché vacía sobre la rama final (25 s). |
 | 14 | BAJA | La comprobación del video pasa con "pendiente". | **Corregido**: aviso (sin fallar) mientras falte el enlace. |
+
+## Re-revisión (`code-reviewer`, estado `9900a9a`)
+
+- **Veredicto**: CAMBIOS REQUERIDOS (1 ALTA, 6 BAJA). Confirmados: parseo del lote, excepción
+  mínima (`be92bdc` es hijo directo de `9f25fd6` y solo cambia V3/V4), URL, enlaces, credenciales,
+  50 MB, paquete viejo y las afirmaciones de DECISIONES (16 deny + 2 excepciones; `ejecutar_seguro`).
+
+| # | Sev. | Hallazgo | Resolución |
+|---|---|---|---|
+| R1 | ALTA | `git clone` de una ruta local copia `objects/` entero (también lo descartado con `reset`/`stash`), y la revisión solo recorría lo alcanzable: esos blobs viajarían sin revisar. | **Corregido**: clon con `--no-local` (solo objetos alcanzables) y revisión de **todos** los objetos del clon (`cat-file --batch-all-objects`). Test: un blob agregado y luego descartado con `reset` no existe en el paquete. El paquete real bajó a 1,1 MB / 240 archivos; descomprimido: 94 commits, `git fsck` limpio, árbol limpio. |
+| R2 | BAJA | Mensajes de commit y tags sin revisar. | **Corregido**: se revisan los objetos `commit` y `tag`; test con credencial en un mensaje. |
+| R3 | BAJA | La excepción por hash apagaba todos los motivos del blob. | **Corregido**: la excepción guarda su único motivo aceptado (forma real); otro motivo en ese blob se reporta. Tests: el blob del repo produce exactamente ese motivo; otro motivo no queda tapado. |
+| R4 | BAJA | El test de la excepción falla en clones superficiales. | **Corregido**: se omite si el repo es superficial. |
+| R5 | BAJA | El aviso de rama no tenía test. | **Corregido**: test con una rama distinta de `main`. |
+| R6 | BAJA | `.git/logs` llevaba la ruta local de quien empaqueta. | **Corregido**: se borra el reflog del clon; test. |
+| R7 | BAJA | Una cabecera inesperada de `cat-file` lanzaría una traza. | **Corregido**: `PaqueteInvalido` con la respuesta recibida. |
+
+## Revisión de cumplimiento (`/revisar-cumplimiento`)
+
+- **Estado revisado**: `9900a9a` (las correcciones posteriores solo endurecen `scripts/empaquetar.py` y sus tests; no cambian el alcance auditado). **Veredicto**: **CUMPLE** (III, IV; I.1–I.5 y II N/A).
+- No toca `src/` ni `data/`. Datos de demo ficticios (últimos 4 dígitos, `FIC-…`); tokens,
+  claves y tarjetas de prueba construidos en tiempo de ejecución; el empaquetado rechaza
+  credenciales y datos con forma real en árbol e historial.
+- Observaciones: la excepción histórica (`9f25fd6`) está fijada por hash, justificada y respeta
+  el principio VII; el `SubagentHandback` negado es una negación de más (no debilita las reglas 1
+  y 2) y queda para un ticket aparte.

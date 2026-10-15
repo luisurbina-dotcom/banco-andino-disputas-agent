@@ -9,6 +9,7 @@ Contrato: specs/011-readme-decisiones-entregables/contracts/entregables.md.
 
 import argparse
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -34,14 +35,15 @@ CARPETAS_PROHIBIDAS = {
     "secrets",
 }
 EXTENSIONES_CLAVE = (".pem", ".key", ".p12", ".pfx")
+MOTIVO_FORMA_REAL = "dato con forma real (tarjeta o documento)"
 # Contenido histórico aceptado por el autor (no se reescribe el historial, principio VII). Se
-# fija por el hash exacto del blob: cualquier otro contenido, aunque esté en la misma ruta, se
-# sigue revisando. Justificación: DECISIONES.md y specs/011-readme-decisiones-entregables/
-# review.md.
+# fija por el hash exacto del blob y por el único motivo aceptado: cualquier otro contenido, u
+# otro motivo en ese blob, se sigue reportando. Justificación: DECISIONES.md y
+# specs/011-readme-decisiones-entregables/review.md.
 EXCEPCIONES_HISTORIAL = {
     # specs/002-hooks-desarrollo/quickstart.md en 9f25fd6 (#2): ejemplo de prueba con forma de
     # cédula escrito antes de que existiera el hook; reemplazado en el commit siguiente (be92bdc).
-    "6744e37a2f9cf3787caca0ffbf2789ef2d291d15",
+    "6744e37a2f9cf3787caca0ffbf2789ef2d291d15": MOTIVO_FORMA_REAL,
 }
 CREDENCIAL = re.compile(
     r"gh[pousr]_[A-Za-z0-9]{20,}|github_pat_\w{20,}|sk-ant-[\w-]{10,}|AKIA[0-9A-Z]{16}"
@@ -74,7 +76,7 @@ def _motivos_por_contenido(texto: str) -> list[str]:
     if CREDENCIAL.search(texto):
         motivos.append("posible credencial")
     if detectar(texto):
-        motivos.append("dato con forma real (tarjeta o documento)")
+        motivos.append(MOTIVO_FORMA_REAL)
     return motivos
 
 
@@ -98,7 +100,8 @@ def _problemas_del_arbol(clon: Path) -> list[str]:
 
 
 def _problemas_del_historial(clon: Path) -> list[str]:
-    """Revisa cada archivo y cada contenido que alguna vez se versionó (viaja en `.git`)."""
+    """Revisa todo lo que viaja en `.git`: nombres versionados alguna vez y cada objeto del clon
+    (contenidos de archivos, mensajes de commit y de tags anotados)."""
     problemas = []
     nombres = set(
         filter(None, _git("log", "--all", "--name-only", "--format=", cwd=clon).split("\n"))
@@ -111,9 +114,9 @@ def _problemas_del_historial(clon: Path) -> list[str]:
         sha, _, ruta = linea.partition(" ")
         if sha:
             rutas[sha] = ruta
+    # Todos los objetos presentes, alcanzables o no: es exactamente lo que se comprime.
     lote = subprocess.run(
-        ["git", "cat-file", "--batch"],
-        input="\n".join(rutas).encode() + b"\n",
+        ["git", "cat-file", "--batch-all-objects", "--batch"],
         cwd=clon,
         check=True,
         capture_output=True,
@@ -121,12 +124,17 @@ def _problemas_del_historial(clon: Path) -> list[str]:
     posicion = 0
     while posicion < len(lote):
         fin = lote.index(b"\n", posicion)
-        sha, tipo, tamano = lote[posicion:fin].decode().split()
-        contenido = lote[fin + 1 : fin + 1 + int(tamano)]
-        posicion = fin + 1 + int(tamano) + 1
-        if tipo == "blob" and sha not in EXCEPCIONES_HISTORIAL:
-            for motivo in _motivos_por_contenido(contenido.decode("utf-8", errors="replace")):
-                problemas.append(f"{rutas[sha] or sha} (historial): {motivo}")
+        campos = lote[posicion:fin].decode(errors="replace").split()
+        if len(campos) != 3 or not campos[2].isdigit():
+            raise PaqueteInvalido(f"Respuesta inesperada de git cat-file: {' '.join(campos)}")
+        sha, tipo, tamano = campos[0], campos[1], int(campos[2])
+        contenido = lote[fin + 1 : fin + 1 + tamano]
+        posicion = fin + 1 + tamano + 1
+        if tipo == "tree":
+            continue  # nombres y hashes en binario; los nombres ya se revisaron arriba
+        for motivo in _motivos_por_contenido(contenido.decode("utf-8", errors="replace")):
+            if EXCEPCIONES_HISTORIAL.get(sha) != motivo:
+                problemas.append(f"{rutas.get(sha) or f'{tipo} {sha}'} (historial): {motivo}")
     return problemas
 
 
@@ -142,12 +150,15 @@ def empaquetar(repo: Path, salida: Path, limite_bytes: int = LIMITE_BYTES) -> di
     salida.unlink(missing_ok=True)  # un paquete viejo nunca debe quedar si este falla
     with tempfile.TemporaryDirectory(prefix="empaquetar-") as temporal:
         clon = Path(temporal) / NOMBRE
-        _git("clone", "-q", "--no-hardlinks", str(repo), str(clon), cwd=Path(temporal))
+        # --no-local: se transfieren solo los objetos alcanzables desde las referencias. Con una
+        # ruta local, git copiaría `objects/` entero (también lo descartado con reset o stash).
+        _git("clone", "-q", "--no-local", str(repo), str(clon), cwd=Path(temporal))
         remoto = subprocess.run(
             ["git", "remote", "get-url", "origin"], cwd=repo, capture_output=True, text=True
         ).stdout.strip()
         if remoto:  # el clon apunta al remoto público, no a la ruta local de quien empaqueta
             _git("remote", "set-url", "origin", _url_publica(remoto), cwd=clon)
+        shutil.rmtree(clon / ".git" / "logs", ignore_errors=True)  # reflog con la ruta local
         problemas = _problemas_del_arbol(clon) + _problemas_del_historial(clon)
         configuracion = (clon / ".git" / "config").read_text(encoding="utf-8", errors="replace")
         problemas += [f".git/config: {m}" for m in _motivos_por_contenido(configuracion)]
