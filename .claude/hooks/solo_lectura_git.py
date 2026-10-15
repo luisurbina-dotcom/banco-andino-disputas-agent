@@ -27,7 +27,7 @@ def permitido(comando: str) -> bool:
     if not resto:
         return False
     subcomando, argumentos = resto[0], resto[1:]
-    if any(a.startswith("--output") for a in argumentos):  # git diff --output=… escribe
+    if any(a == "--output" or a.startswith("--output=") for a in argumentos):  # escribe archivo
         return False
     if subcomando == "branch":
         return argumentos == ["--show-current"]

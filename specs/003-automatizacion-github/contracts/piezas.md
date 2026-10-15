@@ -52,7 +52,8 @@ MUST NOT contener tokens literales. El servidor `banco` se agrega en el issue #4
 ## Skill `sincronizar-ticket` (`.claude/skills/sincronizar-ticket/SKILL.md`)
 
 - Frontmatter: `name`, `description`, `argument-hint: "<issue> <estado|comentar> [texto]"`,
-  `allowed-tools`: solo herramientas del MCP `github` (projects, issues).
+  `allowed-tools`: herramientas del MCP `github` (projects, issues) **preaprobadas** para que la
+  sincronización no pida confirmación. No es una restricción: no usar `gh` es una instrucción.
 - Constantes: dueño `luisurbina-dotcom`, Project 1, campo `Status`, opciones `Todo`,
   `In progress`, `In review`, `Done`.
 - Estado: obtener item (agregarlo si falta), id del campo y de la opción por nombre; actualizar.

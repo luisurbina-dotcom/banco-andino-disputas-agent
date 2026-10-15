@@ -24,8 +24,8 @@ subagentes revisan sin poder modificar. Detalles en [research.md](./research.md)
 
 ## Technical Context
 
-**Language/Version**: Markdown con frontmatter YAML (comandos, skills, subagentes) y JSON
-(`.mcp.json`). Sin código Python de producción.
+**Language/Version**: Markdown con frontmatter YAML (comandos, skills, subagentes), JSON
+(`.mcp.json`) y un hook Python (`solo_lectura_git.py`, biblioteca estándar) con sus tests.
 
 **Primary Dependencies**: Claude Code ≥ 2.1 (comandos, skills, subagentes, MCP); servidor MCP
 remoto oficial de GitHub; Spec Kit (`/speckit-specify`).
@@ -54,7 +54,7 @@ textos hacia GitHub viajan por MCP (no por shell) para no chocar con `secretos_b
 | Principio | Cómo lo respeta esta feature | Estado |
 |---|---|---|
 | I. Reglas de negocio | `compliance-auditor` verifica las reglas 1–5 y marca NO CUMPLE si 1 o 2 no están en hooks. | ✅ |
-| II. Garantizado, no sugerido | Las restricciones de los revisores son de configuración (`tools`/`allowed-tools`), no instrucciones. El bloqueo del PR ante ALTA/NO CUMPLE es una instrucción del comando: se acepta porque decide sobre juicio humano, no sobre un invariante de seguridad. | ✅ |
+| II. Garantizado, no sugerido | Las restricciones de los revisores son deterministas: `tools` del subagente (sin Write/Edit) + hook `solo_lectura_git.py` en su frontmatter. `allowed-tools` de las skills **preaprueba** herramientas (evita preguntas), no restringe. El bloqueo del PR ante ALTA/NO CUMPLE es una instrucción del comando: se acepta porque decide sobre juicio humano, no sobre un invariante de seguridad. | ✅ |
 | III. Datos ficticios y cero credenciales | `.mcp.json` usa `${GITHUB_PAT}`; el script de verificación comprueba que no hay tokens. | ✅ |
 | IV. Spec primero | `/siguiente-ticket` arranca siempre por `/speckit-specify`; `spec_primero.py` sigue protegiendo `src/` y `data/`. | ✅ |
 | VII. Calidad y trazabilidad | Revisión independiente y de cumplimiento antes de cada PR; estados y comentarios automáticos. | ✅ |
@@ -92,6 +92,7 @@ specs/003-automatizacion-github/
 └── agents/
     ├── code-reviewer.md
     └── compliance-auditor.md
+.claude/hooks/solo_lectura_git.py          # Hook de los subagentes revisores (+ test, research R6)
 scripts/verificar_ecosistema.sh             # + comprobaciones de esta feature
 CLAUDE.md                                   # + flujo con los comandos
 ```

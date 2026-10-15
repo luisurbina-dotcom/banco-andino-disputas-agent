@@ -85,9 +85,9 @@ son piezas de configuración: se verifican con `scripts/verificar_ecosistema.sh`
 - [X] T012 [US5] Documentar en `CLAUDE.md` (sección Flujo de trabajo) el uso de `/siguiente-ticket` y `/abrir-pr` y que la fusión la hace una persona (Done por workflow), manteniendo ≤ 60 líneas (requiere aprobación del responsable)
 - [X] T013 Extender `scripts/verificar_ecosistema.sh` con una sección "003": existen las 7 piezas; los subagentes no declaran `Write` ni `Edit` en `tools` y declaran el hook `solo_lectura_git.py`; entre las skills propias aparecen `context: fork`, `allowed-tools` y `argument-hint`; los comandos tienen `description`; `.mcp.json` es JSON válido, usa `${GITHUB_PAT}` y no contiene `ghp_`, `github_pat_` ni `gho_`
 - [X] T014 Ejecutar `bash scripts/verificar_ecosistema.sh`, `uv run pytest -q` y `uv run ruff check .`; todo en verde
-- [ ] T015 Verificación en vivo A1–A5 (tras reiniciar Claude Code con `GITHUB_PAT`): confirmar los nombres de herramientas de R3 y ajustar `allowed-tools` de `sincronizar-ticket` si difieren; registrar resultados en `quickstart.md`
-- [ ] T016 Revisión independiente con el nuevo `code-reviewer` sobre `git diff main...HEAD`; registrar en `specs/003-automatizacion-github/review.md`
-- [ ] T017 Revisión de cumplimiento con `/revisar-cumplimiento specs/003-automatizacion-github`; agregar a `review.md`
+- [X] T015 Verificación en vivo A1–A5 (tras reiniciar Claude Code con `GITHUB_PAT`): confirmar los nombres de herramientas de R3 y ajustar `allowed-tools` de `sincronizar-ticket` si difieren; registrar resultados en `quickstart.md`
+- [X] T016 Revisión independiente con el nuevo `code-reviewer` sobre `git diff main...HEAD`; registrar en `specs/003-automatizacion-github/review.md`
+- [X] T017 Revisión de cumplimiento con `/revisar-cumplimiento specs/003-automatizacion-github`; agregar a `review.md`
 - [ ] T018 Cerrar el ciclo con el propio `/abrir-pr` (primer uso real): PR con `Closes #3`, #3 a In review, comentario de avance
 
 ---

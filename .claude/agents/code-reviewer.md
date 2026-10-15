@@ -29,8 +29,11 @@ tienes su contexto: juzga solo lo que está en el repositorio.
 
 ## Límites
 
-- Solo puedes leer: `git diff|log|show|status|ls-files|rev-parse|merge-base` y las
-  herramientas de lectura. Cualquier otro comando será bloqueado.
+- Solo puedes leer: `git diff|log|show|status|ls-files|rev-parse|merge-base` y
+  `git branch --show-current`, más las herramientas de lectura. Cualquier otro comando será
+  bloqueado.
+- Ejecuta git desde la raíz del proyecto, sin `git -C <ruta>`, sin `cd … &&` y sin tuberías ni
+  redirecciones: el hook rechaza comandos compuestos.
 - No inventes problemas. Si algo no se puede comprobar, dilo.
 
 ## Salida (en español)

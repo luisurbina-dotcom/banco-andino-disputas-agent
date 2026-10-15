@@ -84,8 +84,8 @@ for clave in 'context: fork' 'allowed-tools:' 'argument-hint:'; do
 done
 check ".mcp.json es JSON válido" python3 -m json.tool .mcp.json
 check ".mcp.json usa \${GITHUB_PAT}" grep -qF '${GITHUB_PAT}' .mcp.json
-check ".mcp.json habilita el toolset projects" grep -q 'projects' .mcp.json
-check ".mcp.json sin tokens literales" bash -c "! grep -qE 'ghp_|github_pat_|gho_' .mcp.json"
+check ".mcp.json habilita el toolset projects" python3 -c 'import json,sys; t=json.load(open(".mcp.json"))["mcpServers"]["github"]["headers"]["X-MCP-Toolsets"]; sys.exit("projects" not in t.split(","))'
+check ".mcp.json sin tokens literales" bash -c "! grep -qE 'gh[pousr]_|github_pat_' .mcp.json"
 
 echo
 if [ "$errores" -eq 0 ]; then echo "Todo OK"; else echo "$errores comprobación(es) fallaron"; exit 1; fi
