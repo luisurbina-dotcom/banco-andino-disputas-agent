@@ -106,7 +106,7 @@ una de forma independiente.
 - [X] T017 Confirmar que ningún archivo nuevo contiene credenciales ni datos con forma real (`git diff main --stat` y revisión del contenido)
 - [X] T018 Revisión independiente (constitución § VII): lanzar un subagente de solo lectura (Read, Grep, Glob, `git diff`) sin el contexto de esta sesión, que revise `git diff main...HEAD` contra spec.md y contracts/configuracion.md; registrar hallazgos y su resolución en `specs/001-memoria-reglas-permisos/review.md`. Mientras no exista el subagente `code-reviewer` (issue #3), se usa uno ad hoc con la misma restricción de herramientas
 - [X] T019 Revisión de cumplimiento (constitución § Governance): verificar los principios I a IV sobre el diff (I: CLAUDE.md importa la constitución y no altera umbrales; II: secretos protegidos por `permissions.deny`, no por instrucción; III: sin credenciales ni datos con forma real; IV: spec, plan y tareas presentes) y agregar el resultado a `specs/001-memoria-reglas-permisos/review.md`
-- [ ] T020 Cerrar el ciclo del ticket: abrir el PR de `001-memoria-reglas-permisos` hacia `main` con `Closes #1`, mover el issue #1 a In review en el Project y comentar en el issue lo especificado, lo decidido y lo pendiente
+- [X] T020 Cerrar el ciclo del ticket: abrir el PR de `001-memoria-reglas-permisos` hacia `main` con `Closes #1`, mover el issue #1 a In review en el Project y comentar en el issue lo especificado, lo decidido y lo pendiente
 
 ---
 
