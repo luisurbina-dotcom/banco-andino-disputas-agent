@@ -1,0 +1,19 @@
+# Revisión antes del PR — 007-subagente-handoff
+
+## Revisión independiente (`code-reviewer`, dentro de `/abrir-pr 7`)
+
+- **Fecha**: 2026-10-15 · **Veredicto**: APROBADO CON OBSERVACIONES (sin ALTA).
+- **Confirmado**: las reglas 1 y 2 alcanzan al subagente; `pre_reglas` le niega todo salvo
+  `consultar_transacciones`; `pre_delegacion` es fail-closed y solo admite `analista-transacciones`;
+  FR-006 en el core; orden de recomendación coherente con las reglas 2 y 5; sin datos reales.
+
+| # | Sev. | Hallazgo | Resolución |
+|---|---|---|---|
+| 1 | MEDIA | El subagente no conocía la fecha base del core: `ESCALAR_POLITICA` (> 90 días) era frágil con una fecha base distinta de hoy. | **Corregido**: `consultar_transacciones` devuelve `fecha_base` y `antiguedad_dias` por transacción (contrato 005 ampliado); el prompt del analista los usa y consulta 120 días atrás para cobros antiguos. Tests del core y del prompt. |
+| 2 | BAJA | La restricción "solo consultar" comparaba un único `agent_type`. | **Corregido**: lista permitida: cualquier subagente solo puede `consultar_transacciones`; test con otro `agent_type`. |
+| 3 | BAJA | Herramientas integradas (si una definición las incluyera) no estaban vigiladas por hooks. | **Corregido**: nuevo `PreToolUse` sin matcher (`pre_herramientas_permitidas`) que niega cualquier herramienta fuera de las 6 del banco y la delegación, la llame quien la llame; tests con Bash, Read, WebFetch y otro MCP; verificado en vivo sin regresión. |
+| 4 | BAJA | El evento de delegación registraba siempre `principal` y `Agent`. | **Corregido**: usa `agent_type` y el nombre real (`Task`/`Agent`); test. |
+| 5 | BAJA | Contradicciones del prompt ("solo herramientas del banco"; disputar todo cobro). | **Corregido**: menciona la delegación y disputa según la recomendación del analista. |
+| 6 | BAJA | Tests del prompt poco precisos. | **Corregido**: verifican el encargo, el mapeo recomendación → acción y la exigencia de umbral/política. |
+| 7 | BAJA | Test de opciones debilitado. | **Corregido**: igualdad de `allowed_tools`, hooks concretos y conteo de matchers. |
+| 8 | BAJA | Sin tests fail-closed de `pre_delegacion`. | **Corregido**: `None`, `tool_input` no dict, sin `subagent_type`, `Task`. El test con `None` detectó un fallo real (`_nombre` sin protección) que se corrigió. |

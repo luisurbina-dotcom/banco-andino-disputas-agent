@@ -6,6 +6,7 @@ import pytest
 from agent.garantias import (
     MOTIVO_DELEGACION,
     MOTIVO_FALLO,
+    MOTIVO_HERRAMIENTA_AJENA,
     MOTIVO_PRODUCTO_AJENO,
     MOTIVO_REGLA_1,
     MOTIVO_REGLA_2,
@@ -13,6 +14,7 @@ from agent.garantias import (
     MOTIVO_TX_DESCONOCIDA,
     post_resultado,
     pre_delegacion,
+    pre_herramientas_permitidas,
     pre_reglas,
 )
 
@@ -325,3 +327,38 @@ async def test_eventos_distinguen_al_analista_del_principal(estado):
     )
     await post_resultado(estado)(entrada, "t", None)
     assert estado.eventos[-1].agente == "analista-transacciones"
+
+
+@pytest.mark.parametrize(
+    "entrada",
+    [None, {"tool_name": "Agent", "tool_input": "x"}, {"tool_name": "Task", "tool_input": {}}],
+)
+async def test_delegacion_fail_closed(estado, entrada):
+    salida = await pre_delegacion(estado)(entrada, "t", None)
+    assert _decision(salida) == ("deny", MOTIVO_DELEGACION)
+
+
+async def test_delegacion_negada_registra_herramienta_y_agente(estado):
+    entrada = {**_entrada_agente("general-purpose"), "tool_name": "Task", "agent_type": "x"}
+    await pre_delegacion(estado)(entrada, "t", None)
+    assert (estado.eventos[-1].herramienta, estado.eventos[-1].agente) == ("Task", "x")
+
+
+async def test_cualquier_subagente_solo_puede_consultar(estado):
+    await _verificar(estado)
+    args = {"id_cliente": "CLI-001", "id_transaccion": "TX-0001", "motivo": "x"}
+    entrada = {**entrada_pre("iniciar_disputa", args), "agent_type": "otro-subagente"}
+    salida = await pre_reglas(estado)(entrada, "t", None)
+    assert _decision(salida) == ("deny", MOTIVO_SUBAGENTE)
+
+
+@pytest.mark.parametrize("herramienta", ["Bash", "Read", "WebFetch", "mcp__otro__x", None])
+async def test_herramientas_fuera_de_la_lista_se_niegan(herramienta):
+    hook = pre_herramientas_permitidas({"mcp__banco__buscar_cliente", "Agent"})
+    salida = await hook({"tool_name": herramienta, "tool_input": {}}, "t", None)
+    assert _decision(salida) == ("deny", MOTIVO_HERRAMIENTA_AJENA)
+
+
+async def test_herramientas_permitidas_pasan():
+    hook = pre_herramientas_permitidas({"mcp__banco__buscar_cliente", "Agent"})
+    assert _decision(await hook({"tool_name": "Agent"}, "t", None)) == (None, None)

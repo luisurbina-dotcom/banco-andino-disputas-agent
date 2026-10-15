@@ -26,3 +26,8 @@ def test_prompt_tiene_las_recomendaciones_y_las_reglas():
 
 def test_prompt_sin_datos_con_forma_real():
     assert not re.search(r"\d{8,}", PROMPT_ANALISTA)
+
+
+def test_prompt_usa_la_fecha_del_core():
+    assert "fecha_base" in PROMPT_ANALISTA
+    assert "antiguedad_dias" in PROMPT_ANALISTA

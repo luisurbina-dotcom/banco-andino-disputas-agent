@@ -25,7 +25,14 @@ from claude_agent_sdk import (
 )
 
 from agent import subagente
-from agent.garantias import EstadoSesion, Evento, post_resultado, pre_delegacion, pre_reglas
+from agent.garantias import (
+    EstadoSesion,
+    Evento,
+    post_resultado,
+    pre_delegacion,
+    pre_herramientas_permitidas,
+    pre_reglas,
+)
 from agent.prompt import PROMPT_SISTEMA
 
 HERRAMIENTAS = [
@@ -82,6 +89,10 @@ def construir_opciones(
         model=modelo or os.environ.get("BANCO_MODELO") or None,
         hooks={
             "PreToolUse": [
+                HookMatcher(
+                    matcher=None,
+                    hooks=[pre_herramientas_permitidas({*HERRAMIENTAS, "Agent", "Task"})],
+                ),
                 HookMatcher(matcher=MATCHER_BANCO, hooks=[pre_reglas(estado)]),
                 HookMatcher(matcher="Agent|Task", hooks=[pre_delegacion(estado)]),
             ],

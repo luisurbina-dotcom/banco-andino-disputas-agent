@@ -43,7 +43,16 @@ def test_consultar_ayer_devuelve_los_dos_cobros(ops, verificado):
     assert r["total"] == 2
     assert sorted(tx["monto"] for tx in r["transacciones"]) == [180_000, 1_250_000]
     assert {tx["fecha"] for tx in r["transacciones"]} == {"2026-10-14"}
-    assert set(r["transacciones"][0]) == {"id_transaccion", "fecha", "monto", "comercio", "pais"}
+    assert set(r["transacciones"][0]) == {
+        "id_transaccion",
+        "fecha",
+        "antiguedad_dias",
+        "monto",
+        "comercio",
+        "pais",
+    }
+    assert r["fecha_base"] == "2026-10-15"
+    assert {tx["antiguedad_dias"] for tx in r["transacciones"]} == {1}
 
 
 def test_consultar_sin_rango_usa_los_ultimos_30_dias(ops, verificado):
@@ -53,7 +62,7 @@ def test_consultar_sin_rango_usa_los_ultimos_30_dias(ops, verificado):
 
 def test_rango_sin_datos_es_lista_vacia(ops, verificado):
     r = ops.consultar_transacciones(verificado, "4821", desde="2026-01-01", hasta="2026-01-31")
-    assert r == {"transacciones": [], "total": 0}
+    assert r == {"fecha_base": "2026-10-15", "transacciones": [], "total": 0}
 
 
 @pytest.mark.parametrize(
@@ -211,6 +220,7 @@ def test_escalar_completa_el_resumen_con_datos_del_core(ops, core):
         {
             "id_transaccion": "TX-0002",
             "fecha": "2026-10-14",
+            "antiguedad_dias": 1,
             "monto": 1_250_000,
             "comercio": "Electro Ficticio SAS",
             "pais": "CO",

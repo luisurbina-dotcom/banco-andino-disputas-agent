@@ -34,6 +34,7 @@ MOTIVO_TX_DESCONOCIDA = (
 MOTIVO_FALLO = "Garantía no disponible; la operación se niega por seguridad."
 MOTIVO_DELEGACION = "Solo puedes delegar en el subagente analista-transacciones."
 MOTIVO_SUBAGENTE = "El analista de transacciones solo puede consultar transacciones."
+MOTIVO_HERRAMIENTA_AJENA = "Herramienta no permitida para el agente de disputas."
 SUBAGENTE_ANALISTA = "analista-transacciones"
 MOTIVO_PRODUCTO_AJENO = (
     "Regla 1: la tarjeta o la transacción no pertenece al cliente verificado en esta conversación."
@@ -66,7 +67,9 @@ class EstadoSesion:
         )
 
 
-def _nombre(entrada: dict) -> str:
+def _nombre(entrada) -> str:
+    if not isinstance(entrada, dict):
+        return ""
     return str(entrada.get("tool_name", "")).removeprefix(PREFIJO)
 
 
@@ -138,8 +141,8 @@ def pre_reglas(estado: EstadoSesion):
             agente = _agente(entrada)
             nombre = _nombre(entrada)
             argumentos = entrada.get("tool_input") or {}
-            if agente == SUBAGENTE_ANALISTA and nombre != "consultar_transacciones":
-                motivo = MOTIVO_SUBAGENTE  # el analista solo consulta (además de su definición)
+            if agente != "principal" and nombre != "consultar_transacciones":
+                motivo = MOTIVO_SUBAGENTE  # un subagente solo consulta (lista permitida)
             else:
                 motivo = _motivo_de_negacion(estado, nombre, argumentos)
         except Exception:  # fail-closed: un error interno nunca abre el paso
@@ -200,12 +203,29 @@ def pre_delegacion(estado: EstadoSesion):
             permitido = argumentos.get("subagent_type") == SUBAGENTE_ANALISTA
         except Exception:  # fail-closed
             argumentos, permitido = {}, False
+        agente = _agente(entrada)
         if permitido:
             estado.eventos.append(
-                Evento(SUBAGENTE_ANALISTA, argumentos, "delegado", argumentos.get("prompt"))
+                Evento(SUBAGENTE_ANALISTA, argumentos, "delegado", argumentos.get("prompt"), agente)
             )
             return {}
-        estado.eventos.append(Evento("Agent", argumentos, "negado", MOTIVO_DELEGACION))
+        estado.eventos.append(
+            Evento(_nombre(entrada) or "Agent", argumentos, "negado", MOTIVO_DELEGACION, agente)
+        )
         return _negar(MOTIVO_DELEGACION)
+
+    return hook
+
+
+def pre_herramientas_permitidas(permitidas: set[str]):
+    """PreToolUse sin matcher: niega cualquier herramienta fuera de la lista permitida, la llame
+    el agente principal o un subagente (defensa si cambia la configuración de herramientas)."""
+
+    async def hook(entrada: dict, tool_use_id, contexto) -> dict:
+        try:
+            permitido = entrada.get("tool_name") in permitidas
+        except Exception:  # fail-closed
+            permitido = False
+        return {} if permitido else _negar(MOTIVO_HERRAMIENTA_AJENA)
 
     return hook

@@ -16,7 +16,9 @@ responder `TRANSITORIO/CORE_NO_DISPONIBLE` (`reintentable: true`) si hay fallas 
 
 **Entrada**: `id_cliente`, `ultimos4`, `desde` (opcional), `hasta` (opcional).
 
-**Salida**: `{"transacciones": [{"id_transaccion", "fecha", "monto", "comercio", "pais"}], "total": n}`
+**Salida**: `{"fecha_base", "transacciones": [{"id_transaccion", "fecha", "antiguedad_dias",
+"monto", "comercio", "pais"}], "total": n}`. `fecha_base` y `antiguedad_dias` se agregaron en el
+#7 para que el analista evalúe la política de 90 días sin conocer la fecha del core.
 
 **Errores**: `PERMISOS/IDENTIDAD_NO_VERIFICADA`, `VALIDACION/TARJETA_NO_ENCONTRADA`,
 `VALIDACION/RANGO_INVALIDO`.
