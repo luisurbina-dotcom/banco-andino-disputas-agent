@@ -88,7 +88,7 @@ son piezas de configuración: se verifican con `scripts/verificar_ecosistema.sh`
 - [X] T015 Verificación en vivo A1–A5 (tras reiniciar Claude Code con `GITHUB_PAT`): confirmar los nombres de herramientas de R3 y ajustar `allowed-tools` de `sincronizar-ticket` si difieren; registrar resultados en `quickstart.md`
 - [X] T016 Revisión independiente con el nuevo `code-reviewer` sobre `git diff main...HEAD`; registrar en `specs/003-automatizacion-github/review.md`
 - [X] T017 Revisión de cumplimiento con `/revisar-cumplimiento specs/003-automatizacion-github`; agregar a `review.md`
-- [ ] T018 Cerrar el ciclo con el propio `/abrir-pr` (primer uso real): PR con `Closes #3`, #3 a In review, comentario de avance
+- [X] T018 Cerrar el ciclo con el propio `/abrir-pr` (primer uso real): PR con `Closes #3`, #3 a In review, comentario de avance
 
 ---
 

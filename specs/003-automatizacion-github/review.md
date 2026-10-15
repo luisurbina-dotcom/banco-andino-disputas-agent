@@ -57,3 +57,17 @@ variable, el header viaja literal y el servidor lo rechaza).
 
 Observaciones no bloqueantes del auditor: T015–T018 abiertas en ese momento (esperado) y la
 aclaración sobre `git -C`, ya incorporada (hallazgo T016 #5).
+
+## T018 · Revisión de cumplimiento final (dentro de `/abrir-pr 3`)
+
+- **Fecha**: 2026-10-15 · **Ejecución**: `/revisar-cumplimiento specs/003-automatizacion-github`
+  (fork con `compliance-auditor`) sobre el estado con las correcciones de la segunda revisión.
+- **Veredicto**: CUMPLE (I.1–I.5 N/A; II, III y IV CUMPLE). El hook del auditor bloqueó en vivo
+  un `ls` por Bash.
+- **Observación aceptada para el futuro**: `solo_lectura_git.py` admite `--ext-diff` y
+  `--textconv`, que podrían ejecutar drivers configurados en git; hoy el repo no tiene ninguno.
+  Si se agregan, bloquear esas opciones.
+
+## Compuerta de `/abrir-pr`
+
+Sin hallazgos ALTA pendientes y veredicto CUMPLE → se abre el PR.
