@@ -17,3 +17,13 @@
 | 6 | BAJA | Tests del prompt poco precisos. | **Corregido**: verifican el encargo, el mapeo recomendación → acción y la exigencia de umbral/política. |
 | 7 | BAJA | Test de opciones debilitado. | **Corregido**: igualdad de `allowed_tools`, hooks concretos y conteo de matchers. |
 | 8 | BAJA | Sin tests fail-closed de `pre_delegacion`. | **Corregido**: `None`, `tool_input` no dict, sin `subagent_type`, `Task`. El test con `None` detectó un fallo real (`_nombre` sin protección) que se corrigió. |
+
+## Revisión de cumplimiento (`/revisar-cumplimiento`)
+
+- **Estado revisado**: `c700ed9`. **Veredicto**: **CUMPLE** (I.1–I.5, II, III, IV).
+- Reglas 1 y 2: hooks del #6 alcanzan al subagente; el subagente solo consulta; el servidor repite
+  los controles; escalar por umbral exige cliente y transacciones.
+- Reglas 3–5: prompt + core (`POLITICA_NO_CUBRE`); el analista usa `fecha_base` y
+  `antiguedad_dias` del core.
+- II: dos hooks nuevos (`pre_delegacion`, `pre_herramientas_permitidas`), fail-closed,
+  justificados en research R3 y en esta revisión.
