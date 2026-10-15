@@ -21,3 +21,11 @@
 | Q5 | ✅ `.zip` descomprimido con `unzip`: 91 commits, `origin` en GitHub, árbol limpio, 424 tests en verde. (Con `python -m zipfile -e` se pierden los bits de ejecución de los `.sh`; `unzip` los conserva) |
 | Q6 | ✅ Los seis guiones en el chat muestran los indicadores del caso: C1 bloqueo, delegación, disputa TX-0001, ⛔ regla 2 sobre TX-0002 y escalamiento; C2 solo escalamiento; C3 2 coincidencias y luego identidad de Carlos Ramírez; C4 sin acciones; C5 🔁 y 📋; C6 `POLITICA_NO_CUBRE` y escalamiento. **Hallazgo fuera de alcance**: en C1 y C6 el subagente intentó devolver su análisis con la herramienta interna `SubagentHandback` y el guardia `pre_herramientas_permitidas` la negó (⛔ espurios); el principal volvió a consultar por su cuenta. Queda para un ticket aparte |
 | Q7 | ✅ `uv run pytest -q`: 424 en verde (13 nuevos del empaquetado) |
+
+Tras la revisión independiente:
+
+| # | Resultado |
+|---|---|
+| Q1′ | ✅ Clon limpio de la rama final con `UV_CACHE_DIR` vacío: clon + `uv sync` 4 s, 433 tests en 12 s, primera respuesta del chat en 9 s; total 25 s |
+| Q4′ | ✅ El empaquetado revisa todo el historial: detectó un ejemplo con forma de cédula en `9f25fd6` (#2, previo al hook). El autor aceptó la excepción, fijada por hash del blob; el paquete se genera (2,1 MB, 1190 archivos) y cualquier otro hallazgo histórico se sigue rechazando |
+| Q7′ | ✅ 433 tests (22 del empaquetado: historial, URL con token, enlaces simbólicos, credenciales, excepción por hash) |
