@@ -292,3 +292,28 @@ def test_la_falla_transitoria_va_antes_que_cualquier_validacion(
         with pytest.raises(ErrorCore) as e:
             llamada(ops)
         assert e.value.tipo == despues
+
+
+# --- #7: handoff completo por umbral o política ---
+
+
+@pytest.mark.parametrize("causa", ["MONTO_SUPERA_UMBRAL", "POLITICA_NO_CUBRE"])
+@pytest.mark.parametrize(
+    "extra", [{}, {"id_cliente": "CLI-001"}, {"id_cliente": "CLI-001", "id_transacciones": []}]
+)
+def test_umbral_o_politica_exigen_cliente_y_transacciones(ops, causa, extra):
+    with pytest.raises(ErrorCore) as e:
+        ops.escalar_a_analista(causa, "d", "a", **extra)
+    assert _error(e) == ("VALIDACION", "RESUMEN_INCOMPLETO", False)
+
+
+def test_umbral_completo_crea_el_caso(ops):
+    r = ops.escalar_a_analista(
+        "MONTO_SUPERA_UMBRAL", "d", "a", id_cliente="CLI-001", id_transacciones=["TX-0002"]
+    )
+    assert r["estado"] == "en_cola_analista"
+
+
+@pytest.mark.parametrize("causa", ["CLIENTE_PIDE_PERSONA", "IDENTIDAD_BLOQUEADA"])
+def test_persona_o_bloqueo_no_exigen_transacciones(ops, causa):
+    assert ops.escalar_a_analista(causa, "d", "a")["estado"] == "en_cola_analista"

@@ -73,7 +73,9 @@ modelo, para no abrir una vía de lectura de datos sin identidad verificada.
 **Errores**: `VALIDACION/RESUMEN_INCOMPLETO` (descripción o acción recomendada vacías, o causa
 fuera de las 5 en llamadas directas al core; por MCP la restringe el esquema),
 `VALIDACION/TRANSACCION_NO_ENCONTRADA` (inexistente o de otro cliente),
-`VALIDACION/CLIENTE_NO_EXISTE`. Incluir transacciones exige `id_cliente`.
+`VALIDACION/CLIENTE_NO_EXISTE`. Incluir transacciones exige `id_cliente`. Ampliación del #7:
+las causas `MONTO_SUPERA_UMBRAL` y `POLITICA_NO_CUBRE` exigen `id_cliente` y al menos una
+transacción (si no, `RESUMEN_INCOMPLETO`).
 
 ## Configuración
 

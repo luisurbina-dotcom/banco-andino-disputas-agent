@@ -40,3 +40,14 @@ def test_no_contiene_datos_con_forma_real():
 def test_regla5_general_y_fraude_sin_verificar():
     assert "si la política no cubre el caso" in PROMPT_SISTEMA.lower()
     assert "verifica primero" in PROMPT_SISTEMA
+
+
+def test_delega_el_analisis_con_encargo_explicito():
+    assert "analista-transacciones" in PROMPT_SISTEMA
+    for dato in ("id_cliente", "ultimos4", "cobros"):
+        assert dato in PROMPT_SISTEMA
+
+
+def test_escalar_por_umbral_o_politica_con_cliente_y_transacciones():
+    assert "id_transacciones" in PROMPT_SISTEMA
+    assert "recomendación" in PROMPT_SISTEMA

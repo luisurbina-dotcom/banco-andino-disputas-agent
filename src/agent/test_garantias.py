@@ -4,12 +4,15 @@ from dataclasses import replace
 import pytest
 
 from agent.garantias import (
+    MOTIVO_DELEGACION,
     MOTIVO_FALLO,
     MOTIVO_PRODUCTO_AJENO,
     MOTIVO_REGLA_1,
     MOTIVO_REGLA_2,
+    MOTIVO_SUBAGENTE,
     MOTIVO_TX_DESCONOCIDA,
     post_resultado,
+    pre_delegacion,
     pre_reglas,
 )
 
@@ -259,3 +262,66 @@ async def test_post_con_entrada_invalida_retira_la_verificacion(estado):
     await _verificar(estado)
     await post_resultado(estado)(None, "t", None)
     assert estado.verificado is None
+
+
+# --- #7: delegación y subagente ---
+
+
+def _entrada_agente(subagent_type: str) -> dict:
+    return {
+        "hook_event_name": "PreToolUse",
+        "tool_name": "Agent",
+        "tool_input": {"description": "d", "prompt": "encargo", "subagent_type": subagent_type},
+    }
+
+
+async def test_delegar_en_el_analista_se_permite_y_registra(estado):
+    salida = await pre_delegacion(estado)(_entrada_agente("analista-transacciones"), "t", None)
+    assert _decision(salida) == (None, None)
+    assert estado.eventos[-1].resultado == "delegado"
+    assert estado.eventos[-1].detalle == "encargo"
+
+
+@pytest.mark.parametrize("tipo", ["general-purpose", "Explore", "claude"])
+async def test_delegar_en_otro_subagente_se_niega(estado, tipo):
+    salida = await pre_delegacion(estado)(_entrada_agente(tipo), "t", None)
+    assert _decision(salida) == ("deny", MOTIVO_DELEGACION)
+
+
+def _del_analista(entrada: dict) -> dict:
+    return {**entrada, "agent_id": "a1", "agent_type": "analista-transacciones"}
+
+
+@pytest.mark.parametrize(
+    ("nombre", "args"),
+    [
+        ("iniciar_disputa", {"id_cliente": "CLI-001", "id_transaccion": "TX-0001", "motivo": "x"}),
+        ("buscar_cliente", {"criterio": "4821", "tipo": "ultimos4"}),
+        ("escalar_a_analista", {"causa": "OTRO", "descripcion": "d", "accion_recomendada": "a"}),
+    ],
+)
+async def test_el_analista_solo_puede_consultar(estado, nombre, args):
+    await _verificar(estado)
+    entrada = _del_analista(entrada_pre(nombre, args))
+    salida = await pre_reglas(estado)(entrada, "t", None)
+    assert _decision(salida) == ("deny", MOTIVO_SUBAGENTE)
+    assert estado.eventos[-1].agente == "analista-transacciones"
+
+
+async def test_la_regla1_alcanza_al_analista(estado):
+    entrada = _del_analista(
+        entrada_pre("consultar_transacciones", {"id_cliente": "CLI-001", "ultimos4": "4821"})
+    )
+    salida = await pre_reglas(estado)(entrada, "t", None)
+    assert _decision(salida) == ("deny", MOTIVO_REGLA_1)
+
+
+async def test_eventos_distinguen_al_analista_del_principal(estado):
+    await _verificar(estado)
+    assert estado.eventos[-1].agente == "principal"
+    args = {"id_cliente": "CLI-001", "ultimos4": "4821"}
+    entrada = _del_analista(
+        entrada_post("consultar_transacciones", args, {"transacciones": [], "total": 0})
+    )
+    await post_resultado(estado)(entrada, "t", None)
+    assert estado.eventos[-1].agente == "analista-transacciones"

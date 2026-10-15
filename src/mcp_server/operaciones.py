@@ -167,6 +167,14 @@ class Operaciones:
                 "RESUMEN_INCOMPLETO",
                 "El caso necesita una causa válida, una descripción y una acción recomendada.",
             )
+        if causa in ("MONTO_SUPERA_UMBRAL", "POLITICA_NO_CUBRE") and (
+            id_cliente is None or not id_transacciones
+        ):
+            raise _validacion(
+                "RESUMEN_INCOMPLETO",
+                "Para escalar por umbral o política indica el cliente y las transacciones "
+                "del caso.",
+            )
         if id_transacciones and id_cliente is None:
             raise _validacion(
                 "RESUMEN_INCOMPLETO", "Indica el cliente al incluir transacciones en el caso."
