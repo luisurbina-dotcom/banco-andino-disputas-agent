@@ -20,8 +20,8 @@ stdin y el fail-closed.
 |---|---|---|---|
 | V1 | Pedir escribir en `notas.md` un número de tarjeta válido por Luhn (dictado por la persona, no por Claude) | Bloqueado por `[datos_ficticios]` | US1, SC-001 |
 | V2 | Pedir escribir "tarjeta terminada en 4821, monto $1.250.000" | Permitido | US1 |
-| V3 | Pedir escribir "cédula 79.123.456" | Bloqueado | US1 |
-| V4 | Pedir escribir "documento FIC-10000001" | Permitido | US1 |
+| V3 | Pedir escribir la palabra "cédula" seguida de un número de 8 dígitos con puntos de miles (dictado por la persona) | Bloqueado | US1 |
+| V4 | Pedir escribir "documento" seguido de `FIC-` y 8 dígitos | Permitido | US1 |
 | V5 | En `main`, pedir crear `src/x.py` | Bloqueado: la rama no es feature | US2, SC-002 |
 | V6 | En una rama `999-prueba` sin carpeta de spec, pedir crear `src/x.py` | Bloqueado: faltan artefactos | US2 |
 | V7 | En una rama de feature completa, pedir crear `src/x.py` | Permitido | US2 |

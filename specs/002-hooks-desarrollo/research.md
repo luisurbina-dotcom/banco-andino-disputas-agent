@@ -104,3 +104,15 @@ Verificado contra la documentación oficial de hooks de Claude Code
 - **Decision**: `testpaths = ["src", ".claude/hooks"]` en `pyproject.toml`.
 - **Rationale**: pytest ignora por defecto los directorios que empiezan por `.` al recorrer;
   pasarlo como ruta explícita lo incluye — *a confirmar en vivo al implementar*.
+
+## R11. Falsos positivos de `secretos_bash.py`
+
+- **Decision**: el hook evalúa el texto completo del comando, incluidos los textos libres
+  (mensajes de `git commit -m`, cuerpos de `gh issue comment`, patrones de `grep`).
+- **Rationale**: distinguir "nombra el archivo" de "lo menciona en un texto" exige analizar la
+  sintaxis de shell, y un análisis incompleto abre huecos (`python -c "..."` también es un
+  texto entre comillas). Se prefiere el falso positivo, que es seguro y visible.
+- **Convención**: en commits, issues y comentarios se escribe "archivo de entorno" o
+  "variables de entorno" en lugar del nombre del archivo.
+- **Alternatives considered**: `shlex` y excepción para argumentos de `-m`/`-b` (complejo y
+  evadible).
