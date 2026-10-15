@@ -21,7 +21,7 @@ son piezas de configuración: se verifican con `scripts/verificar_ecosistema.sh`
 
 ## Phase 1: Setup
 
-- [ ] T001 Crear las carpetas `.claude/commands/`, `.claude/agents/`, `.claude/skills/sincronizar-ticket/` y `.claude/skills/revisar-cumplimiento/`
+- [X] T001 Crear las carpetas `.claude/commands/`, `.claude/agents/`, `.claude/skills/sincronizar-ticket/` y `.claude/skills/revisar-cumplimiento/`
 
 ---
 
@@ -29,10 +29,10 @@ son piezas de configuración: se verifican con `scripts/verificar_ecosistema.sh`
 
 **⚠️ CRITICAL**: las historias dependen de esta fase.
 
-- [ ] T002 Crear `.mcp.json` en la raíz exactamente como contrato § `.mcp.json` (`type: "http"`, URL remota oficial, `Authorization: "Bearer ${GITHUB_PAT}"`, `X-MCP-Toolsets: "context,repos,issues,pull_requests,projects"`), sin tokens literales
-- [ ] T003 Agregar `"enabledMcpjsonServers": ["github"]` a `.claude/settings.json` conservando `permissions` y `hooks` (requiere aprobación del responsable; research R2)
-- [ ] T004 [P] Escribir `.claude/hooks/test_solo_lectura_git.py`: permite `git diff main...HEAD`, `git log --oneline -5`, `git show HEAD:x`, `git status`, `git ls-files`, `git rev-parse HEAD`, `git merge-base main HEAD`, `git branch --show-current`; bloquea `git checkout -b x`, `git push`, `git commit`, `git diff > f`, `git diff; rm -rf x`, `git log | sh`, `git show $(cmd)`, `rm x`, `python3 x.py`, `git branch -D x`; evento sin comando → exit 2
-- [ ] T005 Implementar `.claude/hooks/solo_lectura_git.py` según contrato § Hook (subcomandos permitidos, sin metacaracteres `; | & > < $( \``, fail-closed con `comun.ejecutar_seguro`); hacer pasar T004
+- [X] T002 Crear `.mcp.json` en la raíz exactamente como contrato § `.mcp.json` (`type: "http"`, URL remota oficial, `Authorization: "Bearer ${GITHUB_PAT}"`, `X-MCP-Toolsets: "context,repos,issues,pull_requests,projects"`), sin tokens literales
+- [X] T003 Agregar `"enabledMcpjsonServers": ["github"]` a `.claude/settings.json` conservando `permissions` y `hooks` (requiere aprobación del responsable; research R2)
+- [X] T004 [P] Escribir `.claude/hooks/test_solo_lectura_git.py`: permite `git diff main...HEAD`, `git log --oneline -5`, `git show HEAD:x`, `git status`, `git ls-files`, `git rev-parse HEAD`, `git merge-base main HEAD`, `git branch --show-current`; bloquea `git checkout -b x`, `git push`, `git commit`, `git diff > f`, `git diff; rm -rf x`, `git log | sh`, `git show $(cmd)`, `rm x`, `python3 x.py`, `git branch -D x`; evento sin comando → exit 2
+- [X] T005 Implementar `.claude/hooks/solo_lectura_git.py` según contrato § Hook (subcomandos permitidos, sin metacaracteres `; | & > < $( \``, fail-closed con `comun.ejecutar_seguro`); hacer pasar T004
 
 **Checkpoint**: MCP configurado y hook de solo lectura probado.
 
@@ -44,7 +44,7 @@ son piezas de configuración: se verifican con `scripts/verificar_ecosistema.sh`
 
 **Independent Test**: quickstart A3–A4.
 
-- [ ] T006 [US2] Crear `.claude/agents/code-reviewer.md` según contrato § `code-reviewer`: `tools: Read, Grep, Glob, Bash`, `model: inherit`, `hooks.PreToolUse` con matcher `Bash` → `python3 "$CLAUDE_PROJECT_DIR/.claude/hooks/solo_lectura_git.py"` (`onFailure: block`); instrucciones: revisar `git diff main...HEAD` contra `specs/<feature>/spec.md` y `contracts/`, sin contexto previo, salida en tabla con severidad y veredicto
+- [X] T006 [US2] Crear `.claude/agents/code-reviewer.md` según contrato § `code-reviewer`: `tools: Read, Grep, Glob, Bash`, `model: inherit`, `hooks.PreToolUse` con matcher `Bash` → `python3 "$CLAUDE_PROJECT_DIR/.claude/hooks/solo_lectura_git.py"` (`onFailure: block`); instrucciones: revisar `git diff main...HEAD` contra `specs/<feature>/spec.md` y `contracts/`, sin contexto previo, salida en tabla con severidad y veredicto
 
 ---
 
@@ -54,8 +54,8 @@ son piezas de configuración: se verifican con `scripts/verificar_ecosistema.sh`
 
 **Independent Test**: quickstart A5.
 
-- [ ] T007 [P] [US3] Crear `.claude/agents/compliance-auditor.md` con la misma restricción de herramientas y hook que T006; instrucciones: principios I–IV y reglas 1–5 cuando apliquen, evidencia `archivo:línea`, "regla 1 o 2 implementada sin hook PreToolUse del SDK → NO CUMPLE", veredicto global
-- [ ] T008 [US3] Crear `.claude/skills/revisar-cumplimiento/SKILL.md` según contrato: `context: fork`, `agent: compliance-auditor`, `background: false`, `argument-hint: "<carpeta-spec>"`, `allowed-tools: Read Grep Glob Bash`; cuerpo con `$ARGUMENTS` como carpeta de la feature
+- [X] T007 [P] [US3] Crear `.claude/agents/compliance-auditor.md` con la misma restricción de herramientas y hook que T006; instrucciones: principios I–IV y reglas 1–5 cuando apliquen, evidencia `archivo:línea`, "regla 1 o 2 implementada sin hook PreToolUse del SDK → NO CUMPLE", veredicto global
+- [X] T008 [US3] Crear `.claude/skills/revisar-cumplimiento/SKILL.md` según contrato: `context: fork`, `agent: compliance-auditor`, `background: false`, `argument-hint: "<carpeta-spec>"`, `allowed-tools: Read Grep Glob Bash`; cuerpo con `$ARGUMENTS` como carpeta de la feature
 
 ---
 
@@ -65,8 +65,8 @@ son piezas de configuración: se verifican con `scripts/verificar_ecosistema.sh`
 
 **Independent Test**: quickstart A6.
 
-- [ ] T009 [US1] Crear `.claude/skills/sincronizar-ticket/SKILL.md` según contrato: `argument-hint: "<issue> <estado|comentar> [texto]"`, `allowed-tools` con solo las herramientas del MCP `github` de projects e issues (nombres de research R3), constantes del Project y pasos para cambiar estado (agregar el item si falta) y para comentar
-- [ ] T010 [US1] Crear `.claude/commands/siguiente-ticket.md` según contrato § `/siguiente-ticket` (pasos 1–7), con `description` y `argument-hint: "[número-de-issue]"`
+- [X] T009 [US1] Crear `.claude/skills/sincronizar-ticket/SKILL.md` según contrato: `argument-hint: "<issue> <estado|comentar> [texto]"`, `allowed-tools` con solo las herramientas del MCP `github` de projects e issues (nombres de research R3), constantes del Project y pasos para cambiar estado (agregar el item si falta) y para comentar
+- [X] T010 [US1] Crear `.claude/commands/siguiente-ticket.md` según contrato § `/siguiente-ticket` (pasos 1–7), con `description` y `argument-hint: "[número-de-issue]"`
 
 ---
 
@@ -76,15 +76,15 @@ son piezas de configuración: se verifican con `scripts/verificar_ecosistema.sh`
 
 **Independent Test**: quickstart A7 (durante el ticket #4).
 
-- [ ] T011 [US4] Crear `.claude/commands/abrir-pr.md` según contrato § `/abrir-pr` (pasos 1–6), incluyendo la regla de bloqueo de research R8 y que el cuerpo del PR y los comentarios se envían por MCP (research R7)
+- [X] T011 [US4] Crear `.claude/commands/abrir-pr.md` según contrato § `/abrir-pr` (pasos 1–6), incluyendo la regla de bloqueo de research R8 y que el cuerpo del PR y los comentarios se envían por MCP (research R7)
 
 ---
 
 ## Phase 7: User Story 5 + Integración y Polish
 
-- [ ] T012 [US5] Documentar en `CLAUDE.md` (sección Flujo de trabajo) el uso de `/siguiente-ticket` y `/abrir-pr` y que la fusión la hace una persona (Done por workflow), manteniendo ≤ 60 líneas (requiere aprobación del responsable)
-- [ ] T013 Extender `scripts/verificar_ecosistema.sh` con una sección "003": existen las 7 piezas; los subagentes no declaran `Write` ni `Edit` en `tools` y declaran el hook `solo_lectura_git.py`; entre las skills propias aparecen `context: fork`, `allowed-tools` y `argument-hint`; los comandos tienen `description`; `.mcp.json` es JSON válido, usa `${GITHUB_PAT}` y no contiene `ghp_`, `github_pat_` ni `gho_`
-- [ ] T014 Ejecutar `bash scripts/verificar_ecosistema.sh`, `uv run pytest -q` y `uv run ruff check .`; todo en verde
+- [X] T012 [US5] Documentar en `CLAUDE.md` (sección Flujo de trabajo) el uso de `/siguiente-ticket` y `/abrir-pr` y que la fusión la hace una persona (Done por workflow), manteniendo ≤ 60 líneas (requiere aprobación del responsable)
+- [X] T013 Extender `scripts/verificar_ecosistema.sh` con una sección "003": existen las 7 piezas; los subagentes no declaran `Write` ni `Edit` en `tools` y declaran el hook `solo_lectura_git.py`; entre las skills propias aparecen `context: fork`, `allowed-tools` y `argument-hint`; los comandos tienen `description`; `.mcp.json` es JSON válido, usa `${GITHUB_PAT}` y no contiene `ghp_`, `github_pat_` ni `gho_`
+- [X] T014 Ejecutar `bash scripts/verificar_ecosistema.sh`, `uv run pytest -q` y `uv run ruff check .`; todo en verde
 - [ ] T015 Verificación en vivo A1–A5 (tras reiniciar Claude Code con `GITHUB_PAT`): confirmar los nombres de herramientas de R3 y ajustar `allowed-tools` de `sincronizar-ticket` si difieren; registrar resultados en `quickstart.md`
 - [ ] T016 Revisión independiente con el nuevo `code-reviewer` sobre `git diff main...HEAD`; registrar en `specs/003-automatizacion-github/review.md`
 - [ ] T017 Revisión de cumplimiento con `/revisar-cumplimiento specs/003-automatizacion-github`; agregar a `review.md`

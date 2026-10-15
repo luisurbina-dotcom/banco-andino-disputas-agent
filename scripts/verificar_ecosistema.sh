@@ -63,5 +63,29 @@ check "tests.md: paths **/test_*.py y **/conftest.py" paths_ok .claude/rules/tes
 check "mcp-tools.md: paths src/mcp_server/**" paths_ok .claude/rules/mcp-tools.md 'src/mcp_server/**'
 check "src/agent/CLAUDE.md existe" test -f src/agent/CLAUDE.md
 
+echo "003 · Automatización de tickets y revisiones"
+fm() { awk 'NR==1 && $0!="---"{exit 1} NR>1 && $0=="---"{exit} NR>1' "$1"; }
+fm_tiene() { local archivo=$1; shift; local f; f=$(fm "$archivo") || return 1; for clave in "$@"; do grep -qE "^$clave" <<<"$f" || return 1; done; }
+for pieza in .claude/commands/siguiente-ticket.md .claude/commands/abrir-pr.md \
+  .claude/skills/sincronizar-ticket/SKILL.md .claude/skills/revisar-cumplimiento/SKILL.md \
+  .claude/agents/code-reviewer.md .claude/agents/compliance-auditor.md .mcp.json; do
+  check "existe $pieza" test -f "$pieza"
+done
+for comando in .claude/commands/*.md; do
+  check "$(basename "$comando") declara description" fm_tiene "$comando" 'description:'
+done
+for agente in .claude/agents/code-reviewer.md .claude/agents/compliance-auditor.md; do
+  check "$(basename "$agente"): tools sin Write ni Edit" bash -c "grep -E '^tools:' '$agente' | grep -qvE 'Write|Edit'"
+  check "$(basename "$agente"): hook solo_lectura_git" grep -q 'solo_lectura_git.py' "$agente"
+done
+skills_propias=(.claude/skills/sincronizar-ticket/SKILL.md .claude/skills/revisar-cumplimiento/SKILL.md)
+for clave in 'context: fork' 'allowed-tools:' 'argument-hint:'; do
+  check "skills propias usan '$clave'" bash -c "cat ${skills_propias[*]} | grep -qE '^$clave'"
+done
+check ".mcp.json es JSON válido" python3 -m json.tool .mcp.json
+check ".mcp.json usa \${GITHUB_PAT}" grep -qF '${GITHUB_PAT}' .mcp.json
+check ".mcp.json habilita el toolset projects" grep -q 'projects' .mcp.json
+check ".mcp.json sin tokens literales" bash -c "! grep -qE 'ghp_|github_pat_|gho_' .mcp.json"
+
 echo
 if [ "$errores" -eq 0 ]; then echo "Todo OK"; else echo "$errores comprobación(es) fallaron"; exit 1; fi
