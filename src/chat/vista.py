@@ -1,6 +1,7 @@
 """Dibujo de la conversación en la terminal con Rich."""
 
 from rich.console import Console
+from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
@@ -26,8 +27,9 @@ def mensaje_cliente(consola: Console, texto: str) -> None:
 
 
 def respuesta_agente(consola: Console, texto: str) -> None:
+    # El modelo responde con Markdown (negritas, listas): se renderiza en lugar de mostrar `**`.
     consola.print(
-        Panel(texto, title="Agente Banco Andino", title_align="left", border_style="cyan")
+        Panel(Markdown(texto), title="Agente Banco Andino", title_align="left", border_style="cyan")
     )
 
 

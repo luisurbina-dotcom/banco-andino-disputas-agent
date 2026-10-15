@@ -66,9 +66,9 @@ def _indicador(evento: Evento) -> Indicador:
         detalle = f"{datos.get('id_caso', '?')} · causa {causa}"
         return Indicador(True, "👤", "ESCALADO A ANALISTA", detalle, "bold blue")
     if nombre == "buscar_cliente":
-        return Indicador(
-            False, "🔎", "Búsqueda de cliente", f"{datos.get('total', 0)} coincidencias", "dim"
-        )
+        total = datos.get("total", 0)
+        detalle = f"{total} coincidencia" + ("" if total == 1 else "s")
+        return Indicador(False, "🔎", "Búsqueda de cliente", detalle, "dim")
     if nombre == "verificar_identidad":
         if datos.get("verificado") is True:
             return Indicador(

@@ -56,3 +56,10 @@ def test_resumen_vacio():
     consola = _consola()
     vista.resumen(consola, {})
     assert "Sin acciones" in consola.export_text()
+
+
+def test_respuesta_del_agente_renderiza_markdown():
+    consola = _consola()
+    vista.respuesta_agente(consola, "Abrí la disputa **DSP-0001**.")
+    texto = consola.export_text()
+    assert "DSP-0001" in texto and "**" not in texto

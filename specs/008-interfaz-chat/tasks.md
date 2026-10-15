@@ -35,7 +35,7 @@ description: "Tareas de implementación: interfaz de chat"
 ## Phase 5: Polish
 
 - [X] T009 Ejecutar `uv run pytest -q`, `uv run ruff check .`, `uv run ruff format --check .`, `bash scripts/verificar_ecosistema.sh`
-- [ ] T010 Verificación en vivo F1–F3 (F2 y F3 con guion); registrar en `quickstart.md`
+- [X] T010 Verificación en vivo F1–F3 (F2 y F3 con guion); registrar en `quickstart.md`
 - [ ] T011 Cerrar el ticket con `/abrir-pr 8`
 
 ## Dependencies

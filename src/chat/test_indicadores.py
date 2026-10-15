@@ -161,3 +161,8 @@ def test_datos_inesperados_no_rompen():
     assert (
         desde_eventos([Evento("iniciar_disputa", {}, "ok", None)])[0].etiqueta == "DISPUTA ABIERTA"
     )
+
+
+def test_singular_y_plural_de_coincidencias():
+    assert _uno(Evento("buscar_cliente", {}, "ok", {"total": 1})).detalle == "1 coincidencia"
+    assert _uno(Evento("buscar_cliente", {}, "ok", {"total": 0})).detalle == "0 coincidencias"
