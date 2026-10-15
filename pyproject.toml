@@ -14,9 +14,11 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/mcp_server"]
+exclude = ["src/mcp_server/test_*.py", "src/mcp_server/conftest.py"]
 
 [dependency-groups]
 dev = [
+    "anyio>=4",
     "pytest>=8",
     "ruff>=0.6",
 ]

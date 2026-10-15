@@ -1,7 +1,11 @@
+import json
 import re
+import shutil
 from datetime import date
 
-from mcp_server.datos import cargar
+import pytest
+
+from mcp_server.datos import DIRECTORIO_DATOS, cargar
 
 BASE = date(2026, 10, 15)
 
@@ -57,3 +61,18 @@ def test_casos_de_ambiguedad_presentes():
     for t in datos.tarjetas:
         por_ultimos4.setdefault(t["ultimos4"], set()).add(t["id_cliente"])
     assert any(len(titulares) > 1 for titulares in por_ultimos4.values())
+
+
+def test_fecha_base_mal_formada_da_un_mensaje_claro(monkeypatch):
+    monkeypatch.setenv("BANCO_FECHA_BASE", "15/10/2026")
+    with pytest.raises(ValueError, match="BANCO_FECHA_BASE"):
+        cargar()
+
+
+def test_el_directorio_de_datos_puede_venir_del_entorno(monkeypatch, tmp_path):
+    for nombre in ("tarjetas.json", "transacciones.json"):
+        shutil.copy(DIRECTORIO_DATOS / nombre, tmp_path / nombre)
+    clientes = json.loads((DIRECTORIO_DATOS / "clientes.json").read_text(encoding="utf-8"))
+    (tmp_path / "clientes.json").write_text(json.dumps(clientes[:1]), encoding="utf-8")
+    monkeypatch.setenv("BANCO_DATOS_DIR", str(tmp_path))
+    assert len(cargar(fecha_base=BASE).clientes) == 1

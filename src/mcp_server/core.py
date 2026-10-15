@@ -29,6 +29,17 @@ def _validacion(codigo: str, mensaje: str) -> ErrorCore:
     return ErrorCore("VALIDACION", codigo, mensaje)
 
 
+def _fecha_aaaa_mm_dd(texto) -> bool:
+    """Exactamente AAAA-MM-DD y existente en el calendario (fromisoformat acepta más formatos)."""
+    if not isinstance(texto, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", texto):
+        return False
+    try:
+        date.fromisoformat(texto)
+    except ValueError:
+        return False
+    return True
+
+
 def _identidad_bloqueada() -> ErrorCore:
     return ErrorCore(
         "NEGOCIO",
@@ -46,7 +57,7 @@ class Core:
     # --- búsqueda ---------------------------------------------------------------------------
 
     def buscar_cliente(self, criterio: str, tipo: str) -> dict:
-        criterio = (criterio or "").strip()
+        criterio = criterio.strip() if isinstance(criterio, str) else ""
         if not criterio:
             raise _validacion("CRITERIO_VACIO", "Indica un documento, nombre o últimos 4 dígitos.")
         if tipo not in TIPOS_BUSQUEDA:
@@ -67,6 +78,8 @@ class Core:
             ids = {i for i, c in self._clientes.items() if c["documento"] == criterio.upper()}
         else:
             buscado = _normalizar(criterio)
+            if not buscado:  # p. ej. solo emojis o tildes sueltas: no lista a todos
+                raise _validacion("CRITERIO_VACIO", "Indica un nombre con letras.")
             palabras = set(buscado.split())
             ids = {
                 i
@@ -89,21 +102,19 @@ class Core:
     # --- verificación -----------------------------------------------------------------------
 
     def verificar_identidad(self, id_cliente: str, fecha_nacimiento: str) -> dict:
-        cliente = self._clientes.get(id_cliente)
+        cliente = self._clientes.get(id_cliente) if isinstance(id_cliente, str) else None
         if cliente is None:
             raise _validacion(
                 "CLIENTE_NO_EXISTE",
                 "No existe un cliente con ese identificador. Búscalo primero con buscar_cliente.",
             )
-        try:
-            date.fromisoformat(fecha_nacimiento)
-        except (TypeError, ValueError):
-            raise _validacion(
-                "FECHA_INVALIDA", "La fecha de nacimiento debe tener el formato AAAA-MM-DD."
-            ) from None
-
+        # El bloqueo va primero: un cliente bloqueado debe escalar, no reintentar la fecha.
         if self._intentos_fallidos.get(id_cliente, 0) >= MAX_INTENTOS:
             raise _identidad_bloqueada()
+        if not _fecha_aaaa_mm_dd(fecha_nacimiento):
+            raise _validacion(
+                "FECHA_INVALIDA", "La fecha de nacimiento debe tener el formato AAAA-MM-DD."
+            )
 
         if fecha_nacimiento == cliente["fecha_nacimiento"]:
             self._intentos_fallidos[id_cliente] = 0

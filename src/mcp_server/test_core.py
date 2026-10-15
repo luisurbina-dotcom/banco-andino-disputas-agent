@@ -131,3 +131,53 @@ def test_fecha_mal_formada_no_consume_intento(core, titular_4821):
         core.verificar_identidad(id_cliente, "15/10/1990")
     assert (e.value.tipo, e.value.codigo) == ("VALIDACION", "FECHA_INVALIDA")
     assert core.verificar_identidad(id_cliente, "1900-01-01")["intentos_restantes"] == 2
+
+
+# --- Hallazgos de la revisión independiente (review.md) ---
+
+
+@pytest.mark.parametrize("criterio", ["😀", "´", "  ´ ¨ "])
+def test_nombre_que_queda_vacio_al_normalizar_es_criterio_vacio(core, criterio):
+    with pytest.raises(ErrorCore) as e:
+        core.buscar_cliente(criterio, "nombre")
+    assert e.value.codigo == "CRITERIO_VACIO"
+
+
+@pytest.mark.parametrize("fecha", ["19880412", "1988-W15-2", "1988-4-12"])
+def test_fecha_fuera_de_aaaa_mm_dd_es_invalida_y_no_consume_intento(core, titular_4821, fecha):
+    id_cliente = titular_4821["id_cliente"]
+    with pytest.raises(ErrorCore) as e:
+        core.verificar_identidad(id_cliente, fecha)
+    assert e.value.codigo == "FECHA_INVALIDA"
+    assert core.verificar_identidad(id_cliente, "1900-01-01")["intentos_restantes"] == 2
+
+
+def test_fecha_inexistente_en_el_calendario_es_invalida(core, titular_4821):
+    with pytest.raises(ErrorCore) as e:
+        core.verificar_identidad(titular_4821["id_cliente"], "1988-02-30")
+    assert e.value.codigo == "FECHA_INVALIDA"
+
+
+@pytest.mark.parametrize(("criterio", "tipo"), [(123, "nombre"), (None, "ultimos4")])
+def test_criterio_que_no_es_texto_es_validacion(core, criterio, tipo):
+    with pytest.raises(ErrorCore) as e:
+        core.buscar_cliente(criterio, tipo)
+    assert e.value.tipo == "VALIDACION"
+
+
+@pytest.mark.parametrize("id_cliente", [123, ["CLI-001"], None])
+def test_id_cliente_que_no_es_texto_es_validacion(core, id_cliente):
+    with pytest.raises(ErrorCore) as e:
+        core.verificar_identidad(id_cliente, "1990-01-01")
+    assert e.value.codigo == "CLIENTE_NO_EXISTE"
+
+
+def test_cliente_bloqueado_responde_bloqueo_aunque_la_fecha_este_mal_formada(core, titular_4821):
+    id_cliente = titular_4821["id_cliente"]
+    for _ in range(2):
+        core.verificar_identidad(id_cliente, "1900-01-01")
+    with pytest.raises(ErrorCore):
+        core.verificar_identidad(id_cliente, "1900-01-01")
+    with pytest.raises(ErrorCore) as e:
+        core.verificar_identidad(id_cliente, "15/10/1990")
+    assert e.value.codigo == "IDENTIDAD_BLOQUEADA"

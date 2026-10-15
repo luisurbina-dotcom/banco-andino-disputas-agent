@@ -1,9 +1,17 @@
 import json
+import re
+from pathlib import Path
 
 import pytest
 from fastmcp import Client
 
 from mcp_server import servidor
+from mcp_server.core import Core
+
+CONTRATO = (
+    Path(__file__).resolve().parents[2]
+    / "specs/004-core-bancario-identidad/contracts/herramientas.md"
+)
 
 pytestmark = pytest.mark.anyio
 
@@ -14,9 +22,17 @@ def anyio_backend():
 
 
 @pytest.fixture
-async def cliente():
+async def cliente(monkeypatch, datos):
+    # Un Core nuevo por test: el contador de intentos no se comparte entre tests.
+    monkeypatch.setattr(servidor, "core", Core(datos))
     async with Client(servidor.mcp) as c:
         yield c
+
+
+def _descripcion_del_contrato(herramienta: str) -> str:
+    seccion = CONTRATO.read_text(encoding="utf-8").split(f"## `{herramienta}`", 1)[1]
+    cita = re.search(r"\*\*Descripción\*\*[^\n]*\n\n((?:> [^\n]*\n)+)", seccion).group(1)
+    return " ".join(linea[2:].strip() for linea in cita.splitlines())
 
 
 async def _herramientas(cliente):
@@ -27,14 +43,10 @@ async def test_expone_solo_las_herramientas_de_identificacion(cliente):
     assert set(await _herramientas(cliente)) == {"buscar_cliente", "verificar_identidad"}
 
 
-async def test_descripciones_evitan_confundir_las_herramientas(cliente):
+@pytest.mark.parametrize("nombre", ["buscar_cliente", "verificar_identidad"])
+async def test_descripciones_son_exactamente_las_del_contrato(cliente, nombre):
     herramientas = await _herramientas(cliente)
-    buscar = herramientas["buscar_cliente"].description
-    verificar = herramientas["verificar_identidad"].description
-    for fragmento in ("NO confirma", "varias coincidencias", "lista vacía"):
-        assert fragmento in buscar
-    for fragmento in ("UN cliente", "obligatoria", "3 fallos"):
-        assert fragmento in verificar
+    assert herramientas[nombre].description == _descripcion_del_contrato(nombre)
 
 
 async def test_tipo_es_un_enum_de_tres_valores(cliente):
@@ -69,3 +81,29 @@ async def test_tipo_fuera_del_enum_lo_rechaza_el_esquema(cliente):
     )
     assert r.is_error is True
     assert "TIPO_INVALIDO" not in r.content[0].text
+
+
+async def test_busqueda_por_mcp_no_expone_datos_sensibles(cliente, titular_4821):
+    r = await cliente.call_tool("buscar_cliente", {"criterio": "4821", "tipo": "ultimos4"})
+    assert set(r.structured_content["coincidencias"][0]) == {"id_cliente", "nombre", "tarjetas"}
+    assert titular_4821["fecha_nacimiento"] not in json.dumps(r.structured_content)
+
+
+async def test_verificacion_por_mcp_y_bloqueo_como_error(cliente, titular_4821):
+    id_cliente = titular_4821["id_cliente"]
+    ok = await cliente.call_tool(
+        "verificar_identidad",
+        {"id_cliente": id_cliente, "fecha_nacimiento": titular_4821["fecha_nacimiento"]},
+    )
+    assert ok.structured_content["verificado"] is True
+    for _ in range(2):
+        await cliente.call_tool(
+            "verificar_identidad", {"id_cliente": id_cliente, "fecha_nacimiento": "1900-01-01"}
+        )
+    bloqueo = await cliente.call_tool(
+        "verificar_identidad",
+        {"id_cliente": id_cliente, "fecha_nacimiento": "1900-01-01"},
+        raise_on_error=False,
+    )
+    assert bloqueo.is_error is True
+    assert json.loads(bloqueo.content[0].text)["error"]["codigo"] == "IDENTIDAD_BLOQUEADA"
