@@ -21,3 +21,22 @@ Esperado: verde, sin red, < 5 s.
 | C7 | Escalar `CLIENTE_PIDE_PERSONA` sin cliente | Caso aceptado | FR-007, regla 4 |
 | C8 | Verificar `CLI-007` y disputar su cobro en US de hace 120 días | `NEGOCIO/POLITICA_NO_CUBRE` | regla 5 |
 | C9 | Arrancar con `BANCO_FALLAS_TRANSITORIAS=consultar_transacciones:1` y consultar dos veces | 1ª `TRANSITORIO` reintentable; 2ª normal | US5, SC-004 |
+
+## Resultados (2026-10-15)
+
+- 102 tests en `src/mcp_server` (244 en el repo), ruff limpio, `verificar_ecosistema.sh` OK.
+- SC-006: los tests en sí duran < 1 s; la suite tardó 7–12 s porque **importar `fastmcp` tarda
+  5–6,5 s** con la carga actual de la máquina WSL (antes ~4 s). Se registra como desviación por
+  una dependencia, no por el código.
+
+| # | Resultado (sesión nueva `claude -p`, solo `mcp__banco__*`) |
+|---|---|
+| C1 | ✅ Sin verificar → `PERMISOS/IDENTIDAD_NO_VERIFICADA`, no reintentable |
+| C2 | ✅ Verificado; ayer → 2 transacciones ($180.000 y $1.250.000); por defecto → 3 |
+| C3 | ✅ TX-0001 → `DSP-0001` abierta, monto 180000 |
+| C4 | ✅ TX-0002 → `NEGOCIO/MONTO_SUPERA_UMBRAL` "Escala el caso" |
+| C5 | ✅ Bloqueo y repetición → `ya_estaba_bloqueada` false / true, sin error |
+| C6 | ✅ `CASO-0001` con fecha, monto, comercio y país completados por el core desde el id |
+| C7 | ✅ `CLIENTE_PIDE_PERSONA` sin cliente → `CASO-0002` aceptado (regla 4) |
+| C8 | ✅ CLI-007 verificado; TX-0010 (US, 120 días) → `NEGOCIO/POLITICA_NO_CUBRE` |
+| C9 | ✅ Con `BANCO_FALLAS_TRANSITORIAS=consultar_transacciones:1`: 1ª consulta `TRANSITORIO/CORE_NO_DISPONIBLE` reintentable; el reintento → total 3 |
