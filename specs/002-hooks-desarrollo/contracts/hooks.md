@@ -15,6 +15,7 @@
 | `Write` | `file_path`, `content` |
 | `Edit` | `file_path`, `new_string` |
 | `MultiEdit` (compatibilidad) | `file_path`, `edits[].new_string` |
+| `NotebookEdit` | `notebook_path`, `new_source` |
 | `Bash` | `command` |
 
 ## Salida común
@@ -67,7 +68,7 @@ Los mensajes MUST NOT incluir el número detectado completo.
 ```json
 "hooks": {
   "PreToolUse": [
-    { "matcher": "Edit|Write", "hooks": [
+    { "matcher": "Edit|Write|MultiEdit|NotebookEdit", "hooks": [
       { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/datos_ficticios.py\"", "timeout": 10, "onFailure": "block" },
       { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/spec_primero.py\"", "timeout": 10, "onFailure": "block" }
     ]},
@@ -76,7 +77,7 @@ Los mensajes MUST NOT incluir el número detectado completo.
     ]}
   ],
   "PostToolUse": [
-    { "matcher": "Edit|Write", "hooks": [
+    { "matcher": "Edit|Write|MultiEdit|NotebookEdit", "hooks": [
       { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/formatear.py\"", "timeout": 60 }
     ]}
   ]

@@ -15,7 +15,7 @@
 | 4 | MEDIA | `formatear.py` salía con 2 y mensaje vacío si ruff fallaba por sí mismo; reportaba diagnósticos previos al formateo. | **Corregido**: `check --fix` → `format` → `check` final; código 1 = diagnósticos (exit 2), otro código = aviso y exit 0; `uv run --no-sync`. Test con config inválida. |
 | 5 | MEDIA | `secrets` sin barra final (`cd secrets && …`) pasaba. | **Corregido** con test; no afecta palabras como "secretos". |
 | 6 | BAJA | Mayúsculas (`.ENV`, `.PEM`) y globs (`.e*`, `.en?`, `.[e]nv`, `*.pem`) pasaban. | **Corregido** con tests. Indirección por variables, `$(printf …)` y base64 quedan como **limitación conocida** (spec, edge cases; la garantía real sería el sandbox). |
-| 7 | BAJA | El matcher `Edit\|Write` no cubre `NotebookEdit` (puede escribir en `src/`); la rama `edits` de MultiEdit sin matcher. | **Código listo** (`new_source`, `notebook_path`, test). **Cambio de matcher pendiente de aprobación del responsable** (configuración de equipo). |
+| 7 | BAJA | El matcher `Edit\|Write` no cubre `NotebookEdit` (puede escribir en `src/`); la rama `edits` de MultiEdit sin matcher. | **Corregido con aprobación del responsable**: matcher `Edit\|Write\|MultiEdit\|NotebookEdit` en PreToolUse y PostToolUse; el código usa `new_source` y `notebook_path`. |
 | 8 | BAJA | Faltaban tests de HEAD desacoplado, ruta relativa con `cwd`, `src/CLAUDE.md`. | **Corregido**: 4 tests nuevos (incluye NotebookEdit). |
 | 9 | BAJA | `target-version = "py312"` con reglas `UP` podía reescribir los hooks a sintaxis 3.12. | **Corregido**: `per-file-ignores` de `UP` para `.claude/hooks/*.py`. |
 
