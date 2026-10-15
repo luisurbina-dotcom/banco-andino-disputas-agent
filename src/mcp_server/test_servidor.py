@@ -7,11 +7,17 @@ from fastmcp import Client
 
 from mcp_server import servidor
 from mcp_server.core import Core
+from mcp_server.operaciones import Operaciones
 
-CONTRATO = (
-    Path(__file__).resolve().parents[2]
-    / "specs/004-core-bancario-identidad/contracts/herramientas.md"
-)
+SPECS = Path(__file__).resolve().parents[2] / "specs"
+CONTRATOS = {
+    "buscar_cliente": SPECS / "004-core-bancario-identidad/contracts/herramientas.md",
+    "verificar_identidad": SPECS / "004-core-bancario-identidad/contracts/herramientas.md",
+    "consultar_transacciones": SPECS / "005-operaciones-core/contracts/herramientas.md",
+    "iniciar_disputa": SPECS / "005-operaciones-core/contracts/herramientas.md",
+    "bloquear_tarjeta": SPECS / "005-operaciones-core/contracts/herramientas.md",
+    "escalar_a_analista": SPECS / "005-operaciones-core/contracts/herramientas.md",
+}
 
 pytestmark = pytest.mark.anyio
 
@@ -23,14 +29,17 @@ def anyio_backend():
 
 @pytest.fixture
 async def cliente(monkeypatch, datos):
-    # Un Core nuevo por test: el contador de intentos no se comparte entre tests.
-    monkeypatch.setattr(servidor, "core", Core(datos))
+    # Un Core nuevo por test: intentos, verificados, disputas y fallas no se comparten.
+    core = Core(datos)
+    monkeypatch.setattr(servidor, "core", core)
+    monkeypatch.setattr(servidor, "ops", Operaciones(core))
     async with Client(servidor.mcp) as c:
         yield c
 
 
 def _descripcion_del_contrato(herramienta: str) -> str:
-    seccion = CONTRATO.read_text(encoding="utf-8").split(f"## `{herramienta}`", 1)[1]
+    texto = CONTRATOS[herramienta].read_text(encoding="utf-8")
+    seccion = texto.split(f"## `{herramienta}`", 1)[1]
     cita = re.search(r"\*\*Descripción\*\*[^\n]*\n\n((?:> [^\n]*\n)+)", seccion).group(1)
     return " ".join(linea[2:].strip() for linea in cita.splitlines())
 
@@ -39,11 +48,11 @@ async def _herramientas(cliente):
     return {t.name: t for t in await cliente.list_tools()}
 
 
-async def test_expone_solo_las_herramientas_de_identificacion(cliente):
-    assert set(await _herramientas(cliente)) == {"buscar_cliente", "verificar_identidad"}
+async def test_expone_exactamente_las_seis_herramientas(cliente):
+    assert set(await _herramientas(cliente)) == set(CONTRATOS)
 
 
-@pytest.mark.parametrize("nombre", ["buscar_cliente", "verificar_identidad"])
+@pytest.mark.parametrize("nombre", sorted(CONTRATOS))
 async def test_descripciones_son_exactamente_las_del_contrato(cliente, nombre):
     herramientas = await _herramientas(cliente)
     assert herramientas[nombre].description == _descripcion_del_contrato(nombre)
@@ -107,3 +116,71 @@ async def test_verificacion_por_mcp_y_bloqueo_como_error(cliente, titular_4821):
     )
     assert bloqueo.is_error is True
     assert json.loads(bloqueo.content[0].text)["error"]["codigo"] == "IDENTIDAD_BLOQUEADA"
+
+
+async def test_causa_es_un_enum_de_cinco_valores(cliente):
+    esquema = (await _herramientas(cliente))["escalar_a_analista"].input_schema
+    assert set(esquema["properties"]["causa"]["enum"]) == {
+        "CLIENTE_PIDE_PERSONA",
+        "MONTO_SUPERA_UMBRAL",
+        "POLITICA_NO_CUBRE",
+        "IDENTIDAD_BLOQUEADA",
+        "OTRO",
+    }
+
+
+async def _verificar_por_mcp(cliente, titular):
+    await cliente.call_tool(
+        "verificar_identidad",
+        {"id_cliente": titular["id_cliente"], "fecha_nacimiento": titular["fecha_nacimiento"]},
+    )
+
+
+async def test_flujo_verificar_consultar_disputar_por_mcp(cliente, titular_4821):
+    await _verificar_por_mcp(cliente, titular_4821)
+    id_cliente = titular_4821["id_cliente"]
+    consulta = await cliente.call_tool(
+        "consultar_transacciones",
+        {
+            "id_cliente": id_cliente,
+            "ultimos4": "4821",
+            "desde": "2026-10-14",
+            "hasta": "2026-10-14",
+        },
+    )
+    assert consulta.structured_content["total"] == 2
+    disputa = await cliente.call_tool(
+        "iniciar_disputa",
+        {"id_cliente": id_cliente, "id_transaccion": "TX-0001", "motivo": "No lo reconozco"},
+    )
+    assert disputa.structured_content["estado"] == "abierta"
+    sobre_umbral = await cliente.call_tool(
+        "iniciar_disputa",
+        {"id_cliente": id_cliente, "id_transaccion": "TX-0002", "motivo": "No lo reconozco"},
+        raise_on_error=False,
+    )
+    assert sobre_umbral.is_error is True
+    error = json.loads(sobre_umbral.content[0].text)["error"]
+    assert (error["tipo"], error["codigo"], error["reintentable"]) == (
+        "NEGOCIO",
+        "MONTO_SUPERA_UMBRAL",
+        False,
+    )
+
+
+async def test_falla_transitoria_configurada_por_mcp(cliente, titular_4821):
+    await _verificar_por_mcp(cliente, titular_4821)
+    servidor.configurar_fallas("consultar_transacciones:1")
+    argumentos = {"id_cliente": titular_4821["id_cliente"], "ultimos4": "4821"}
+    falla = await cliente.call_tool("consultar_transacciones", argumentos, raise_on_error=False)
+    assert falla.is_error is True
+    error = json.loads(falla.content[0].text)["error"]
+    assert (error["tipo"], error["reintentable"]) == ("TRANSITORIO", True)
+    ok = await cliente.call_tool("consultar_transacciones", argumentos)
+    assert ok.structured_content["total"] == 3
+
+
+@pytest.mark.parametrize("texto", ["consultar_transacciones", "x:dos", ":1", "x:-1"])
+def test_configuracion_de_fallas_invalida(texto):
+    with pytest.raises(ValueError, match="BANCO_FALLAS_TRANSITORIAS"):
+        servidor.configurar_fallas(texto)

@@ -53,6 +53,36 @@ class Core:
         self._clientes = {c["id_cliente"]: c for c in datos.clientes}
         self._tarjetas = datos.tarjetas
         self._intentos_fallidos: dict[str, int] = {}
+        # Estado compartido con Operaciones (#5), en memoria durante la ejecución del servidor.
+        self.datos = datos
+        self._verificados: set[str] = set()
+        self._fallas: dict[str, int] = {}
+        self.disputas: dict[str, dict] = {}
+        self.casos: list[dict] = []
+
+    # --- estado compartido ------------------------------------------------------------------
+
+    def cliente(self, id_cliente) -> dict | None:
+        return self._clientes.get(id_cliente) if isinstance(id_cliente, str) else None
+
+    def esta_verificado(self, id_cliente: str) -> bool:
+        return id_cliente in self._verificados
+
+    def programar_fallas(self, herramienta: str, n: int) -> None:
+        """Las próximas `n` llamadas a `herramienta` responderán un error transitorio."""
+        if n < 0:
+            raise ValueError("el número de fallas no puede ser negativo")
+        self._fallas[herramienta] = n
+
+    def consumir_falla(self, herramienta: str) -> None:
+        if self._fallas.get(herramienta, 0) > 0:
+            self._fallas[herramienta] -= 1
+            raise ErrorCore(
+                "TRANSITORIO",
+                "CORE_NO_DISPONIBLE",
+                "El core no respondió a tiempo. Reintenta la operación.",
+                reintentable=True,
+            )
 
     # --- búsqueda ---------------------------------------------------------------------------
 
@@ -118,6 +148,7 @@ class Core:
 
         if fecha_nacimiento == cliente["fecha_nacimiento"]:
             self._intentos_fallidos[id_cliente] = 0
+            self._verificados.add(id_cliente)
             return {"verificado": True, "id_cliente": id_cliente, "nombre": cliente["nombre"]}
 
         fallidos = self._intentos_fallidos.get(id_cliente, 0) + 1
