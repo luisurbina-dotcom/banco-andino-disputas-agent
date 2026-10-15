@@ -30,6 +30,9 @@ issue en minúsculas con guiones. Rama y carpeta comparten nombre.
 | hallazgo, recomendación | texto |
 | resolución | Corregido, Aceptado (con justificación), Pendiente |
 
+En `review.md` la ubicación y la recomendación pueden resumirse dentro del texto del hallazgo
+y de la resolución; la salida completa del revisor queda en su ejecución.
+
 ## Veredicto de cumplimiento
 
 | Campo | Valores |

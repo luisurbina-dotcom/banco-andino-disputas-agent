@@ -30,6 +30,8 @@ BLOQUEADOS = [
     "git -c alias.x=!sh x",
     "rm x",
     "python3 x.py",
+    "git -C otra/ruta diff",
+    "git diff --output cambios.txt",
     "",
 ]
 
@@ -61,4 +63,11 @@ def test_hook_permite_por_stdin(correr_hook):
 
 def test_evento_sin_comando_bloquea_por_seguridad(correr_hook):
     r = correr_hook("solo_lectura_git", {"tool_name": "Bash", "tool_input": None})
+    assert r.returncode == 2
+
+
+def test_comilla_sin_cerrar_bloquea_por_seguridad(correr_hook):
+    r = correr_hook(
+        "solo_lectura_git", {"tool_name": "Bash", "tool_input": {"command": 'git log "x'}}
+    )
     assert r.returncode == 2

@@ -16,13 +16,17 @@ Inicia el siguiente ticket del backlog. Si se indicó un número (`$ARGUMENTS`),
    campo **Input** mencione `#<n>`. Si existe, reutiliza su nombre y cámbiate a esa rama
    (ticket retomado). Si no, desde `main` actualizado (`git switch main && git pull`) crea la
    rama `NNN-nombre`: `NNN` es el siguiente número libre en `specs/` y `nombre` son 2–4 palabras
-   del título en minúsculas con guiones. Escribe `.specify/feature.json` con
-   `{"feature_directory": "specs/NNN-nombre"}`.
-6. **Especificar.** Invoca `/speckit-specify` pasándole el número, título y cuerpo completos del
-   issue (leídos por MCP) e indicando que la rama y la carpeta ya existen.
-7. **Avisar.** Usa `sincronizar-ticket` con `<n> comentar` y un comentario de avance con la
+   del título en minúsculas con guiones. Crea la carpeta `specs/NNN-nombre/checklists/` y escribe
+   `.specify/feature.json` con `{"feature_directory": "specs/NNN-nombre"}`.
+6. **Especificar.** Si `specs/NNN-nombre/spec.md` **ya existe** (ticket retomado), no lo
+   regeneres: indica en qué fase quedó la feature (qué artefactos existen) y propone el siguiente
+   comando. Si no existe, invoca `/speckit-specify` con `SPECIFY_FEATURE_DIRECTORY=specs/NNN-nombre`
+   y el número, título y cuerpo completos del issue (leídos por MCP), para que la carpeta de la
+   spec coincida con la rama.
+7. **Publicar.** Haz commit de `spec.md` y `checklists/` (`docs(spec): especificación de … (#<n>)`)
+   y publica la rama (`git push -u origin NNN-nombre`), así el enlace del comentario funciona.
+8. **Avisar.** Usa `sincronizar-ticket` con `<n> comentar` y un comentario de avance con la
    rama, el enlace a `specs/NNN-nombre/spec.md`, lo especificado, lo decidido y lo pendiente.
-   Publica la rama antes (`git push -u origin NNN-nombre`) para que el enlace funcione.
 
 Al final, resume en pocas líneas: ticket, rama, estado en el Project y siguiente paso
-(`/speckit-plan`).
+(`/speckit-plan` o el que corresponda si el ticket se retomó).

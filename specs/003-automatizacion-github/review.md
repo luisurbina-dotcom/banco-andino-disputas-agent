@@ -25,6 +25,24 @@ Nota del revisor: el MCP `github` no conectó en su sesión ("authorization head
 formatted"). Esa sesión se lanzó sin `GITHUB_PAT`: confirma el caso borde de la spec (sin la
 variable, el header viaja literal y el servidor lo rechaza).
 
+## T018 · Segunda revisión independiente (dentro de `/abrir-pr 3`)
+
+- **Fecha**: 2026-10-15 · **Ejecución**: subagente `code-reviewer` invocado por `/abrir-pr` en la
+  sesión interactiva con el MCP `github` conectado.
+- **Verificación de T016**: los 9 hallazgos "Corregido" están aplicados (comprobados archivo por
+  archivo). El hook bloqueó en vivo un `git grep` del propio revisor.
+- **Veredicto**: APROBADO CON OBSERVACIONES.
+
+| # | Sev. | Hallazgo | Resolución |
+|---|---|---|---|
+| 10 | MEDIA | `/siguiente-ticket` llamaba a `/speckit-specify` aunque el ticket se retomara: la skill sobrescribe `spec.md` con la plantilla. | **Corregido**: si `spec.md` existe, no se regenera; se informa la fase y el siguiente comando. |
+| 11 | MEDIA | Decía "la carpeta ya existe" sin crearla ni pasar `SPECIFY_FEATURE_DIRECTORY`: la skill podía elegir otro nombre que la rama. | **Corregido**: crea `specs/NNN-nombre/checklists/` y pasa `SPECIFY_FEATURE_DIRECTORY` explícito. |
+| 12 | MEDIA | Comentaba el enlace a `spec.md` sin commit: el enlace apuntaba a un archivo inexistente en el remoto (SC-004). | **Corregido**: nuevo paso 7 de commit y push antes del comentario. |
+| 13 | BAJA | La tabla de `review.md` no separa ubicación y recomendación (data-model). | **Corregido** en data-model: en `review.md` se resumen dentro del hallazgo y la resolución. |
+| 14 | BAJA | Faltaban tests: `git -C ruta diff`, `--output archivo` separado y comilla sin cerrar. | **Corregido**: 3 casos nuevos (32 tests del hook). |
+| 15 | BAJA | Mensaje del hook distinto entre contrato y código. | **Corregido** en el contrato. |
+| 16 | BAJA | Quickstart A5 citaba `specs/002-…` pero se ejecutó sobre `specs/003-…`. | **Corregido**. |
+
 ## T017 · Revisión de cumplimiento (`/revisar-cumplimiento`)
 
 - **Fecha**: 2026-10-15 · **Ejecución**: skill con `context: fork` y `agent: compliance-auditor`.

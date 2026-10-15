@@ -83,5 +83,5 @@ MUST NOT contener tokens literales. El servidor `banco` se agrega en el issue #4
 
 - Entrada: evento PreToolUse de Bash. Permite (exit 0) solo `git diff|log|show|status|ls-files|
   rev-parse|merge-base|branch --show-current` con argumentos sin `; | & > < $( \``. Cualquier
-  otro comando → exit 2 con `[solo_lectura_git] Este subagente solo puede leer el repositorio.`
+  otro comando → exit 2 con `[solo_lectura_git] Este subagente solo puede leer el repositorio (git diff, log, show…).`
 - Fail-closed como los demás hooks de bloqueo.
