@@ -263,3 +263,44 @@ def test_aviso_si_no_se_empaqueta_desde_main(tmp_path, capsys):
     subprocess.run([*GIT, "switch", "-q", "-c", "otra"], cwd=repo, check=True)
     assert empaquetar.main([str(repo), "--salida", str(tmp_path / "p.zip")]) == 0
     assert "rama otra" in capsys.readouterr().err
+
+
+def test_tag_anotado_con_credencial_se_rechaza(tmp_path):
+    repo = _repo(tmp_path, {"README.md": "# P"})
+    token = "gh" + "p_" + "A1b2C3d4E5" * 4
+    subprocess.run([*GIT, "tag", "-a", "v1", "-m", f"usa {token}"], cwd=repo, check=True)
+    with pytest.raises(empaquetar.PaqueteInvalido, match=r"v1 \(historial\): posible credencial"):
+        empaquetar.empaquetar(repo, tmp_path / "p.zip")
+
+
+def test_sin_remoto_el_paquete_no_lleva_la_ruta_local(tmp_path):
+    repo = _repo(tmp_path, {"README.md": "# P"})
+    salida = tmp_path / "p.zip"
+    empaquetar.empaquetar(repo, salida)
+    config = zipfile.ZipFile(salida).read(f"{empaquetar.NOMBRE}/.git/config").decode()
+    assert str(repo) not in config
+
+
+def test_nombre_prohibido_creado_solo_en_un_merge_se_rechaza(tmp_path):
+    entorno = ".e" + "nv"
+    repo = _repo(tmp_path, {"README.md": "# P"})
+
+    def git(*argumentos):
+        subprocess.run([*GIT, *argumentos], cwd=repo, check=True)
+
+    git("switch", "-q", "-c", "rama")
+    (repo / "a.txt").write_text("a", encoding="utf-8")
+    git("add", "a.txt")
+    git("commit", "-qm", "a")
+    git("switch", "-q", "main")
+    (repo / "b.txt").write_text("b", encoding="utf-8")
+    git("add", "b.txt")
+    git("commit", "-qm", "b")
+    git("merge", "-q", "--no-commit", "--no-ff", "rama")
+    (repo / entorno).write_text("inocuo", encoding="utf-8")
+    git("add", entorno)
+    git("commit", "-qm", "merge")
+    git("rm", "-q", entorno)
+    git("commit", "-qm", "quita")
+    with pytest.raises(empaquetar.PaqueteInvalido, match="archivo de entorno"):
+        empaquetar.empaquetar(repo, tmp_path / "p.zip")

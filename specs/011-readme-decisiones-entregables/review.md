@@ -40,6 +40,21 @@
 | R6 | BAJA | `.git/logs` llevaba la ruta local de quien empaqueta. | **Corregido**: se borra el reflog del clon; test. |
 | R7 | BAJA | Una cabecera inesperada de `cat-file` lanzaría una traza. | **Corregido**: `PaqueteInvalido` con la respuesta recibida. |
 
+## Re-revisión acotada al ALTA (`code-reviewer`, estado `f019d40`)
+
+- **Veredicto**: APROBADO CON OBSERVACIONES (4 BAJA). El ALTA queda resuelto: `--no-local` solo
+  transfiere lo alcanzable y `--batch-all-objects` revisa todo lo presente (doble defensa); la
+  excepción `{hash: motivo}` solo silencia ese par; los tests distinguen de verdad.
+
+| # | Sev. | Hallazgo | Resolución |
+|---|---|---|---|
+| A1 | BAJA | Archivos de `.git` fuera de `objects/` (plantilla, `packed-refs`, refs) sin revisar salvo `config`. | **Corregido**: clon con `--template` vacío y revisión de contenido de todo `.git` fuera de `objects/`. |
+| A2 | BAJA | Nombres creados solo al resolver un merge no aparecían en `log --name-only`. | **Corregido**: `--diff-merges=separate`; test con un archivo de entorno creado solo en un merge. |
+| A3 | BAJA | Sin `origin`, `.git/config` conservaría la ruta local. | **Corregido**: se elimina `origin` del clon; test. |
+| A4 | BAJA | Sin test de tag anotado. | **Corregido**: test con credencial en un tag anotado. |
+
+Verificado: 30 tests del empaquetado, 441 en total; paquete real 1,1 MB.
+
 ## Revisión de cumplimiento (`/revisar-cumplimiento`)
 
 - **Estado revisado**: `9900a9a` (las correcciones posteriores solo endurecen `scripts/empaquetar.py` y sus tests; no cambian el alcance auditado). **Veredicto**: **CUMPLE** (III, IV; I.1–I.5 y II N/A).

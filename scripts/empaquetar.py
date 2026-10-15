@@ -104,7 +104,12 @@ def _problemas_del_historial(clon: Path) -> list[str]:
     (contenidos de archivos, mensajes de commit y de tags anotados)."""
     problemas = []
     nombres = set(
-        filter(None, _git("log", "--all", "--name-only", "--format=", cwd=clon).split("\n"))
+        filter(
+            None,
+            _git(
+                "log", "--all", "--name-only", "--diff-merges=separate", "--format=", cwd=clon
+            ).split("\n"),
+        )
     )
     for nombre in sorted(nombres):
         if motivo := _motivo_por_nombre(PurePosixPath(nombre)):
@@ -152,16 +157,33 @@ def empaquetar(repo: Path, salida: Path, limite_bytes: int = LIMITE_BYTES) -> di
         clon = Path(temporal) / NOMBRE
         # --no-local: se transfieren solo los objetos alcanzables desde las referencias. Con una
         # ruta local, git copiaría `objects/` entero (también lo descartado con reset o stash).
-        _git("clone", "-q", "--no-local", str(repo), str(clon), cwd=Path(temporal))
+        # --template vacío: sin hooks ni archivos de una plantilla de git personalizada.
+        plantilla = Path(temporal) / "plantilla"
+        plantilla.mkdir()
+        _git(
+            "clone",
+            "-q",
+            "--no-local",
+            f"--template={plantilla}",
+            str(repo),
+            str(clon),
+            cwd=Path(temporal),
+        )
         remoto = subprocess.run(
             ["git", "remote", "get-url", "origin"], cwd=repo, capture_output=True, text=True
         ).stdout.strip()
-        if remoto:  # el clon apunta al remoto público, no a la ruta local de quien empaqueta
+        # El clon apunta al remoto público, nunca a la ruta local de quien empaqueta.
+        if remoto:
             _git("remote", "set-url", "origin", _url_publica(remoto), cwd=clon)
+        else:
+            _git("remote", "remove", "origin", cwd=clon)
         shutil.rmtree(clon / ".git" / "logs", ignore_errors=True)  # reflog con la ruta local
         problemas = _problemas_del_arbol(clon) + _problemas_del_historial(clon)
-        configuracion = (clon / ".git" / "config").read_text(encoding="utf-8", errors="replace")
-        problemas += [f".git/config: {m}" for m in _motivos_por_contenido(configuracion)]
+        for ruta in sorted((clon / ".git").rglob("*")):  # config, refs, info: fuera de objects/
+            if ruta.is_file() and "objects" not in ruta.relative_to(clon / ".git").parts:
+                texto = ruta.read_text(encoding="utf-8", errors="replace")
+                relativa = ruta.relative_to(clon)
+                problemas += [f"{relativa}: {m}" for m in _motivos_por_contenido(texto)]
         if problemas:
             raise PaqueteInvalido("El paquete no se generó:\n- " + "\n- ".join(problemas))
         archivos = [r for r in sorted(clon.rglob("*")) if r.is_file()]

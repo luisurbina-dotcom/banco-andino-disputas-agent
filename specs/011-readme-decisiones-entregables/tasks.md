@@ -19,7 +19,7 @@
 ## Fase 3: Verificación
 
 - [X] T007 Q1–Q7; registrar resultados en `quickstart.md`
-- [ ] T008 Cerrar el ticket con `/abrir-pr 11`
+- [X] T008 Cerrar el ticket con `/abrir-pr 11`
 
 ## Dependencias
 
