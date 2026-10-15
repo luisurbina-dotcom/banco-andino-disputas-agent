@@ -20,7 +20,7 @@ description: "Tareas de implementación: agente de disputas y garantías de las 
 ## Phase 1: Setup
 
 - [X] T001 Agregar `claude-agent-sdk>=0.2,<0.3` a `dependencies` y `"src/agent"` a `packages` del wheel (con el mismo `exclude` de tests) en `pyproject.toml`; `uv sync`; confirmar `uv run python -c "import claude_agent_sdk, agent"`
-- [X] T002 Crear `src/agent/__init__.py` (docstring) y `src/agent/conftest.py` con la fixture `estado` (`EstadoSesion` con datos cargados con fecha base 2026-10-15) y helpers que arman entradas de hook (`entrada_pre(nombre, args)`, `entrada_post(nombre, args, respuesta)`) con el formato verificado en research R3 (`mcp__banco__<nombre>`, `tool_response` como texto JSON)
+- [X] T002 Crear `src/agent/__init__.py` (docstring) y `src/agent/conftest.py` con la fixture `estado` (`EstadoSesion` con datos cargados con fecha base 2026-10-15) y, en `test_garantias.py` (no en conftest: hay varios `conftest.py` en el repo), helpers que arman entradas de hook (`entrada_pre(nombre, args)`, `entrada_post(nombre, args, respuesta)`) con el formato verificado en research R3 (`mcp__banco__<nombre>`, `tool_response` como texto JSON)
 
 ---
 

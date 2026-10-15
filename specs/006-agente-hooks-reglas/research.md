@@ -69,8 +69,10 @@ Verificado el 2026-10-15 con `claude-agent-sdk` 0.2.167 y una sonda real (agente
 
 - **Decision**: `setting_sources=[]` (no carga `CLAUDE.md`, reglas ni hooks de desarrollo del
   repo), `allowed_tools` = las 6 herramientas del banco, `tools=[]` para quitar las herramientas
-  integradas (lectura de archivos, shell), `cwd` = un directorio temporal. *A confirmar en vivo:
-  que `tools=[]` deje solo las MCP.*
+  integradas (lectura de archivos, shell), `strict_mcp_config=True`, `cwd` = un directorio
+  temporal. **Confirmado en vivo** (mensaje `init`): `tools=[]` quita las integradas, pero sin
+  `strict_mcp_config` se heredaban los conectores MCP de la cuenta (Drive, Docs); con él solo
+  quedan las 6 del banco.
 - **Rationale**: el agente atiende clientes; no debe heredar la configuración de desarrollo ni
   poder leer archivos del repo.
 
