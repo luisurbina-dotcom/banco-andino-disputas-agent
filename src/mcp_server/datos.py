@@ -8,6 +8,7 @@ es `data/` del repositorio (instalación editable con `uv sync`) o `BANCO_DATOS_
 
 import json
 import os
+import re
 from dataclasses import dataclass
 from datetime import date, timedelta
 from pathlib import Path
@@ -30,6 +31,8 @@ def _fecha_base(fecha_base: date | None) -> date:
     if not desde_entorno:
         return date.today()
     try:
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", desde_entorno):
+            raise ValueError
         return date.fromisoformat(desde_entorno)
     except ValueError:
         raise ValueError(

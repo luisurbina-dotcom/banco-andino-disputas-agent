@@ -63,8 +63,9 @@ def test_casos_de_ambiguedad_presentes():
     assert any(len(titulares) > 1 for titulares in por_ultimos4.values())
 
 
-def test_fecha_base_mal_formada_da_un_mensaje_claro(monkeypatch):
-    monkeypatch.setenv("BANCO_FECHA_BASE", "15/10/2026")
+@pytest.mark.parametrize("valor", ["15/10/2026", "20261015", "2026-W42-4"])
+def test_fecha_base_mal_formada_da_un_mensaje_claro(monkeypatch, valor):
+    monkeypatch.setenv("BANCO_FECHA_BASE", valor)
     with pytest.raises(ValueError, match="BANCO_FECHA_BASE"):
         cargar()
 

@@ -82,7 +82,7 @@ implementación. Todos sin red ni API key.
 - [X] T017 [US5] Agregar el servidor `banco` a `.mcp.json` según contrato § Registro, y `"banco"` a `enabledMcpjsonServers` en `.claude/settings.json` (requiere aprobación del responsable)
 - [X] T018 Ejecutar `uv run pytest -q`, `uv run ruff check .`, `uv run ruff format --check .` y `bash scripts/verificar_ecosistema.sh`; todo en verde y la suite de `src/mcp_server` en < 5 s (SC-006)
 - [X] T019 Verificación en vivo B1–B6 de `quickstart.md` (sesión nueva de Claude Code o `claude -p`); registrar resultados en `quickstart.md`
-- [ ] T020 Cerrar el ticket con `/abrir-pr 4` (revisión independiente, cumplimiento, PR con `Closes #4`, In review y comentario)
+- [X] T020 Cerrar el ticket con `/abrir-pr 4` (revisión independiente, cumplimiento, PR con `Closes #4`, In review y comentario)
 
 ---
 

@@ -153,9 +153,11 @@ def test_fecha_fuera_de_aaaa_mm_dd_es_invalida_y_no_consume_intento(core, titula
 
 
 def test_fecha_inexistente_en_el_calendario_es_invalida(core, titular_4821):
+    id_cliente = titular_4821["id_cliente"]
     with pytest.raises(ErrorCore) as e:
-        core.verificar_identidad(titular_4821["id_cliente"], "1988-02-30")
+        core.verificar_identidad(id_cliente, "1988-02-30")
     assert e.value.codigo == "FECHA_INVALIDA"
+    assert core.verificar_identidad(id_cliente, "1900-01-01")["intentos_restantes"] == 2
 
 
 @pytest.mark.parametrize(("criterio", "tipo"), [(123, "nombre"), (None, "ultimos4")])
