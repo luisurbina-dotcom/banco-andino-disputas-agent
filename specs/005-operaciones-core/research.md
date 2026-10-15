@@ -41,8 +41,10 @@
 - **Decision**: `escalar_a_analista(causa, descripcion, accion_recomendada, id_cliente=None,
   id_transacciones=[], acciones_realizadas=[])`. El core enriquece cada `id_transaccion` con
   fecha, monto, comercio y país desde sus datos y el `id_cliente` con el nombre; un id
-  desconocido → `VALIDACION`. Devuelve `{id_caso, estado: "en_cola_analista", resumen}` y guarda
-  el caso.
+  desconocido o de otro cliente → `VALIDACION`; incluir transacciones exige `id_cliente`. Guarda el
+  caso completo en el core y al modelo devuelve solo `{id_caso, estado, transacciones_incluidas}`
+  (enmienda tras la revisión independiente: el resumen enriquecido no debe ser una vía de lectura
+  de datos sin identidad verificada).
 - **Rationale**: el analista no ve la conversación; si el modelo enviara los montos podría
   equivocarse. Con ids, el resumen tiene los montos reales. No exige verificación (regla 4).
 - **Alternatives considered**: texto libre (no estructurado, sin garantía de campos); montos
