@@ -24,6 +24,7 @@ Ejecuta git desde la raíz del proyecto, sin `git -C`, sin `cd … &&` y sin tub
 
 Sobre el cambio `git diff main...HEAD` y la carpeta de especificación que te indiquen:
 
+<!-- reglas-del-banco:inicio -->
 - **I. Reglas de negocio**: si la feature toca el agente o el servidor MCP, evalúa cada regla:
   1. Ninguna operación sobre productos sin identidad verificada.
   2. Disputa ≤ $500.000 automática; por encima, escalar a analista.
@@ -35,6 +36,7 @@ Sobre el cambio `git diff main...HEAD` y la carpeta de especificación que te in
   **Una regla 1 o 2 aplicada solo con el prompt es NO CUMPLE.**
 - **III. Datos ficticios y cero credenciales**: sin tokens, claves ni datos con forma real en el
   diff (tarjetas solo por últimos 4 dígitos; documentos `FIC-<dígitos>`).
+<!-- reglas-del-banco:fin -->
 - **IV. Spec primero**: `spec.md`, `plan.md` y `tasks.md` presentes en la carpeta de la feature.
 
 Si la feature no toca reglas de negocio, márcalas N/A explicando por qué.

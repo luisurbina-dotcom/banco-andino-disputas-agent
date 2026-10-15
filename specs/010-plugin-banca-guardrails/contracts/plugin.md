@@ -20,10 +20,10 @@ Equivalente por CLI: `claude plugin marketplace add <fuente> [--scope …]` y
 - Cualquier excepción o timeout bloquea (`ejecutar_seguro` + `onFailure: "block"`).
 - Comportamiento idéntico al hook de este repo (mismos scripts).
 
-## Skill `/banca-guardrails:revisar-cumplimiento <carpeta-spec> [rama-base]`
+## Skill `/banca-guardrails:revisar-cumplimiento <carpeta-spec>`
 
 - `context: fork`, `agent: banca-guardrails:compliance-auditor`.
-- Inyecta `git diff --stat <base>...HEAD` y `git diff <base>...HEAD` (base `main` por defecto).
+- Inyecta `git diff --stat <base>...HEAD` y `git diff <base>...HEAD` (base `main`).
 - Salida: tabla Principio/Regla | Resultado (CUMPLE / NO CUMPLE / N/A) | Evidencia y la línea
   `Veredicto: CUMPLE` o `Veredicto: NO CUMPLE`.
 

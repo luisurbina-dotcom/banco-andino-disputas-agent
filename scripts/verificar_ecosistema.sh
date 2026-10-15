@@ -87,5 +87,19 @@ check ".mcp.json usa \${GITHUB_PAT}" grep -qF '${GITHUB_PAT}' .mcp.json
 check ".mcp.json habilita el toolset projects" python3 -c 'import json,sys; t=json.load(open(".mcp.json"))["mcpServers"]["github"]["headers"]["X-MCP-Toolsets"]; sys.exit("projects" not in t.split(","))'
 check ".mcp.json sin tokens literales" bash -c "! grep -qE 'gh[pousr]_|github_pat_' .mcp.json"
 
+echo "010 · Plugin banca-guardrails"
+check "marketplace.json es JSON válido" python3 -m json.tool .claude-plugin/marketplace.json
+check "plugin.json es JSON válido" python3 -m json.tool plugins/banca-guardrails/.claude-plugin/plugin.json
+check "hooks.json del plugin es JSON válido" python3 -m json.tool plugins/banca-guardrails/hooks/hooks.json
+for pieza in agents/compliance-auditor.md skills/revisar-cumplimiento/SKILL.md README.md; do
+  check "plugin: $pieza" test -f "plugins/banca-guardrails/$pieza"
+done
+if command -v claude >/dev/null 2>&1; then
+  check "claude plugin validate --strict (plugin)" claude plugin validate plugins/banca-guardrails --strict
+  check "claude plugin validate --strict (marketplace)" claude plugin validate . --strict
+else
+  ok "claude no disponible: se omite claude plugin validate"
+fi
+
 echo
 if [ "$errores" -eq 0 ]; then echo "Todo OK"; else echo "$errores comprobación(es) fallaron"; exit 1; fi

@@ -118,7 +118,8 @@ qué incluye, cómo comprobar que funciona y cómo desinstalar.
 
 - El proyecto destino no tiene una constitución de Spec Kit: el auditor usa la guía del proyecto
   (`CLAUDE.md`) y las reglas del banco, y lo dice en su informe.
-- El proyecto destino no usa `main` como rama base: la skill acepta indicar la base o detectarla.
+- El proyecto destino no usa `main` como rama base: la skill compara con `main` y la limitación
+  queda documentada en las instrucciones (ver research R6).
 - El proyecto destino ya tiene su propio hook de datos: ambos corren; el plugin no reemplaza la
   configuración del equipo.
 - El intérprete disponible en el destino: el hook no depende de dependencias externas.
@@ -136,7 +137,8 @@ qué incluye, cómo comprobar que funciona y cómo desinstalar.
   (detección, mensaje accionable y falla cerrada) y no depender de rutas de este proyecto.
 - **FR-005**: El subagente MUST ser de solo lectura en el proyecto destino.
 - **FR-006**: La skill y el subagente MUST funcionar en un proyecto distinto de este: fuente de
-  verdad del proyecto destino si existe, reglas del banco como base y rama base configurable.
+  verdad del proyecto destino si existe y reglas del banco como base; la rama base (`main`) queda
+  documentada.
 - **FR-007**: Cada pieza MUST tener una única fuente de verdad en el repo, o una verificación
   automática MUST detectar la divergencia.
 - **FR-008**: El plugin MUST instalarse desde otro directorio con el administrador de plugins

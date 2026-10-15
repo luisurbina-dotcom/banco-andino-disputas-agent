@@ -1,0 +1,15 @@
+{
+  "name": "banca-guardrails",
+  "version": "1.0.0",
+  "description": "Guardrails de Banco Andino para Claude Code: bloqueo de datos con forma real, auditor de cumplimiento de solo lectura y revisión de cumplimiento antes del PR.",
+  "author": {
+    "name": "Luis F. Urbina Moreno"
+  },
+  "repository": "https://github.com/luisurbina-dotcom/banco-andino-disputas-agent",
+  "keywords": [
+    "banca",
+    "cumplimiento",
+    "datos-ficticios",
+    "guardrails"
+  ]
+}

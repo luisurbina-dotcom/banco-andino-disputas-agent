@@ -60,8 +60,11 @@ components, loading, cli-reference, sub-agents, skills, hooks), consultada el 20
 
 - **Decision**: el auditor del plugin toma como fuente de verdad, en este orden, la constitución
   de Spec Kit del proyecto destino (`.specify/memory/constitution.md`), si existe, o su `CLAUDE.md`,
-  y siempre las reglas del banco (bloque compartido). La rama base es `main` salvo que la skill
-  reciba otra como segundo argumento.
+  y siempre las reglas del banco (bloque compartido).
+- **Rama base**: `main`, documentada como limitación. Los argumentos de la skill se sustituyen
+  como texto antes de ejecutar la inyección de contexto, así que un segundo argumento opcional
+  no puede tener `main` por defecto sin comandos compuestos que `allowed-tools: Bash(git diff:*)`
+  no autoriza.
 
 ## R7. Prueba de instalación aislada
 

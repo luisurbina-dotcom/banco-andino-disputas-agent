@@ -1,0 +1,16 @@
+{
+  "name": "banco-andino",
+  "owner": {
+    "name": "Luis F. Urbina Moreno"
+  },
+  "metadata": {
+    "description": "Plugins de Claude Code reutilizables por los equipos de Banco Andino (banco ficticio)."
+  },
+  "plugins": [
+    {
+      "name": "banca-guardrails",
+      "source": "./plugins/banca-guardrails",
+      "description": "Hook que bloquea datos con forma de tarjeta o documento real, auditor de cumplimiento de solo lectura y skill de revisión antes del PR."
+    }
+  ]
+}
