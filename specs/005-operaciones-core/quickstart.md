@@ -17,7 +17,7 @@ Esperado: verde, sin red, < 5 s.
 | C3 | Disputar el cobro de $180.000 | Disputa abierta | US2 |
 | C4 | Disputar el cobro de $1.250.000 | `NEGOCIO/MONTO_SUPERA_UMBRAL` | US2, regla 2 |
 | C5 | Bloquear la 4821 dos veces | Bloqueada; la segunda `ya_estaba_bloqueada: true` | US3 |
-| C6 | Escalar por `MONTO_SUPERA_UMBRAL` con la transacción de $1.250.000 | Caso en cola con monto y comercio completados por el core | US4 |
+| C6 | Escalar por `MONTO_SUPERA_UMBRAL` con la transacción de $1.250.000 | Caso en cola con `transacciones_incluidas: 1`; el resumen con monto y comercio queda en el core | US4 |
 | C7 | Escalar `CLIENTE_PIDE_PERSONA` sin cliente | Caso aceptado | FR-007, regla 4 |
 | C8 | Verificar `CLI-007` y disputar su cobro en US de hace 120 días | `NEGOCIO/POLITICA_NO_CUBRE` | regla 5 |
 | C9 | Arrancar con `BANCO_FALLAS_TRANSITORIAS=consultar_transacciones:1` y consultar dos veces | 1ª `TRANSITORIO` reintentable; 2ª normal | US5, SC-004 |
@@ -40,3 +40,4 @@ Esperado: verde, sin red, < 5 s.
 | C7 | ✅ `CLIENTE_PIDE_PERSONA` sin cliente → `CASO-0002` aceptado (regla 4) |
 | C8 | ✅ CLI-007 verificado; TX-0010 (US, 120 días) → `NEGOCIO/POLITICA_NO_CUBRE` |
 | C9 | ✅ Con `BANCO_FALLAS_TRANSITORIAS=consultar_transacciones:1`: 1ª consulta `TRANSITORIO/CORE_NO_DISPONIBLE` reintentable; el reintento → total 3 |
+| C6 (repetido tras `4e305ec`) | ✅ Salida reducida `{"id_caso":"CASO-0001","estado":"en_cola_analista","transacciones_incluidas":1}`; sin `id_cliente` con transacciones → `VALIDACION/RESUMEN_INCOMPLETO` "Indica el cliente al incluir transacciones en el caso." |

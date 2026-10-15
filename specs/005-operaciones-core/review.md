@@ -25,3 +25,35 @@ Observación del proceso (para la defensa): al editar `test_servidor.py` en tres
 formateo (`ruff check --fix`) borró entre ediciones un import que todavía no se usaba (F401), y la
 edición siguiente quedó con un nombre indefinido que el mismo hook reportó. Se resolvió escribiendo
 los cambios en una sola operación. Es el costo esperado de autocorregir después de cada edición.
+
+## Re-revisión del commit de correcciones (`code-reviewer`)
+
+- **Alcance**: `git show 4e305ec`. **Veredicto**: APROBADO CON OBSERVACIONES; los 8 hallazgos
+  corregidos y probados, sin regresiones.
+
+| # | Sev. | Hallazgo | Resolución |
+|---|---|---|---|
+| 9 | BAJA | El esperado y el resultado de C6 en el quickstart eran anteriores a la salida reducida. | **Corregido**: esperado actualizado y C6 repetido en vivo tras `4e305ec`. |
+| 10 | BAJA | La descripción de `escalar_a_analista` no decía que incluir transacciones exige `id_cliente`. | **Corregido** en contrato y servidor con el mismo texto (test de igualdad exacta). |
+| 11 | BAJA | Sin verificación, `TRANSACCION_NO_ENCONTRADA` frente al éxito revela si una transacción pertenece a un cliente (y crea casos). | **Aceptado**: impacto mínimo (el modelo no conoce ids de transacciones sin consultar, y consultar exige verificación). Se deja como nota para el hook del #6. |
+| 12 | BAJA | Import de `ErrorCore` dentro de una función de test (rodeo del F401). | **Corregido**: import al encabezado. |
+
+## Revisión de cumplimiento (`/revisar-cumplimiento`)
+
+- **Fecha**: 2026-10-15 · **Veredicto**: **NO CUMPLE**.
+
+| Principio/Regla | Resultado | Evidencia (resumen del auditor) |
+|---|---|---|
+| I.1 Identidad primero | CUMPLE (servidor) | `_exigir_verificado` antes de leer datos; verificado solo por `verificar_identidad` exitosa y revocado al bloquearse. |
+| I.2 Umbral $500.000 | CUMPLE (servidor) | Monto del core; la firma no recibe monto; tests de límite. |
+| I.3 Bloqueo inmediato | CUMPLE | Sin aprobación, idempotente, exige identidad. |
+| I.4 Persona a pedido | CUMPLE (parte del servidor) | Escalar sin verificación; descripciones dicen cuándo no consultar/disputar. Prompt del agente en #6. |
+| I.5 Fuera de política | CUMPLE (parte del servidor) | `POLITICA_NO_CUBRE` antes del umbral, mensaje de escalar. |
+| **II. Garantizado (reglas 1 y 2)** | **NO CUMPLE** | No existen aún los hooks `PreToolUse`/`PostToolUse` del Agent SDK (`src/agent/` solo tiene `CLAUDE.md`). La constitución los exige; el control del servidor es defensa en profundidad. Atenuantes: ningún agente usa estas herramientas, nada depende del prompt y el servidor decide con datos del core. |
+| III. Datos ficticios | CUMPLE | Sin credenciales ni datos con forma real. |
+| IV. Spec primero | CUMPLE | spec → plan/tasks → código en el historial. |
+
+## Compuerta de `/abrir-pr`
+
+**Veredicto NO CUMPLE → el PR no se abre** hasta que una persona decida (aceptación explícita con
+justificación, o esperar al #6). Ver la sección siguiente cuando se resuelva.

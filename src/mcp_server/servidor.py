@@ -63,10 +63,11 @@ DESCRIPCION_BLOQUEAR = (
 )
 DESCRIPCION_ESCALAR = (
     "Pasa el caso a un analista humano, que NO ve la conversación. Úsala de inmediato si el "
-    "cliente pide hablar con una persona (sin verificar ni investigar antes), y cuando una disputa "
-    "responda MONTO_SUPERA_UMBRAL o POLITICA_NO_CUBRE, o la identidad quede bloqueada. Envía la "
-    "causa, los ids de las transacciones involucradas, lo que ya hiciste y una acción recomendada; "
-    "el core completa montos y fechas."
+    "cliente pide hablar con una persona (sin verificar ni investigar antes), y cuando una "
+    "disputa responda MONTO_SUPERA_UMBRAL o POLITICA_NO_CUBRE, o la identidad quede "
+    "bloqueada. Envía la causa, los ids de las transacciones involucradas (si incluyes "
+    "transacciones, indica también el id_cliente), lo que ya hiciste y una acción "
+    "recomendada; el core completa montos y fechas."
 )
 
 mcp = FastMCP("banco", instructions=INSTRUCCIONES)

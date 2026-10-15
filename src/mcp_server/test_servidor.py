@@ -7,6 +7,7 @@ from fastmcp import Client
 
 from mcp_server import servidor
 from mcp_server.core import Core
+from mcp_server.errores import ErrorCore
 from mcp_server.operaciones import Operaciones
 
 SPECS = Path(__file__).resolve().parents[2] / "specs"
@@ -206,7 +207,5 @@ def test_el_entorno_aplica_las_fallas_al_arrancar(monkeypatch, datos):
     monkeypatch.setattr(servidor, "core", core)
     monkeypatch.setenv("BANCO_FALLAS_TRANSITORIAS", "bloquear_tarjeta:1")
     servidor.aplicar_configuracion_del_entorno()
-    from mcp_server.errores import ErrorCore
-
     with pytest.raises(ErrorCore):
         core.consumir_falla("bloquear_tarjeta")
