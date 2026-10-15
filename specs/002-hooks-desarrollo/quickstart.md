@@ -32,3 +32,13 @@ stdin y el fail-closed.
 | V12 | Romper temporalmente `detector.py` (error de sintaxis) y pedir una escritura | Bloqueada por seguridad (fail-closed) | FR-009 |
 
 Al terminar: borrar `notas.md`, `src/x.py`, la rama `999-prueba` y revertir V12.
+
+## Resultados automáticos (2026-10-15)
+
+- `uv run pytest -q` → 72 tests en verde en ~7,5 s (SC-005 ✅).
+- `uv run ruff check .` y `uv run ruff format --check .` → sin hallazgos.
+- Detector sobre los 71 archivos del repo → 0 detecciones (los hooks no chocan con lo existente).
+- Latencia de los hooks de bloqueo (10 ejecuciones, WSL2): mediana 215–354 ms, con picos
+  ocasionales de la máquina. Cumple SC-006 (< 1 s perceptible); la meta interna del plan
+  (< 300 ms) solo la cumple la mediana de `spec_primero` y `secretos_bash`. El costo es casi
+  todo el arranque del intérprete; se acepta.
