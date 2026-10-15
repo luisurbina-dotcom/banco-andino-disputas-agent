@@ -386,11 +386,12 @@ async def test_un_subagente_puede_devolver_su_resultado(estado):
         "tool_input": {},
         "agent_type": "analista-transacciones",
     }
-    assert _decision(await _guardia(estado)(entrada, "t", None)) == (None, None)
+    salida = await _guardia(estado)(entrada, "t", None)
+    assert _decision(salida)[0] == "allow"  # explícito: no está en allowed_tools
     assert estado.eventos == []  # no se registra como negación
 
 
-@pytest.mark.parametrize("agente", [None, "", "principal"])
+@pytest.mark.parametrize("agente", [None, "", "principal", "otro-subagente"])
 async def test_la_devolucion_fuera_de_un_subagente_se_niega(estado, agente):
     entrada = {"tool_name": "SubagentHandback", "tool_input": {}}
     if agente is not None:

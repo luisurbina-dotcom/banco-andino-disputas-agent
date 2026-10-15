@@ -49,8 +49,9 @@ delegación o la devolución del subagente.
 
 ### Edge Cases
 
-- La devolución es intermitente (el modelo no siempre la usa): la verificación en vivo repite
-  los casos hasta observarla.
+- La devolución es intermitente: apareció en dos ejecuciones del #11 y no en las 20 posteriores,
+  ni siquiera pidiéndosela al subagente (no se le ofrece). Riesgo residual: si vuelve y llega sin
+  el tipo de agente, se sigue negando (falla cerrada, igual que antes de la corrección).
 - La entrada del hook no informa qué agente hace la llamada: se trata como agente principal y se
   niega (falla cerrada).
 
@@ -59,25 +60,29 @@ delegación o la devolución del subagente.
 ### Functional Requirements
 
 - **FR-001**: El guardia MUST permitir la herramienta interna de devolución solo cuando la llama
-  un subagente.
+  el subagente `analista-transacciones`, y MUST autorizarla de forma explícita (no figura entre
+  las herramientas permitidas de la sesión).
 - **FR-002**: El guardia MUST seguir negando toda otra herramienta fuera de la lista permitida y
   toda entrada malformada.
 - **FR-003**: Las reglas 1 y 2 y la restricción del subagente a `consultar_transacciones` sobre
   herramientas del banco MUST no cambiar.
-- **FR-004**: MUST haber tests unitarios de FR-001 y FR-002, y verificación en vivo de que la
-  devolución ya no se niega.
+- **FR-004**: MUST haber tests unitarios de FR-001 y FR-002 (incluido que ningún hook configurado
+  niegue la devolución del analista) y verificación en vivo sin regresiones. Si la herramienta no
+  se ofrece al subagente durante la verificación, se registra como riesgo residual (enmienda tras
+  la revisión independiente).
 
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
 
-- **SC-001**: 0 negaciones de la devolución del subagente en las ejecuciones en vivo donde el
-  subagente la usa.
+- **SC-001**: 0 negaciones de la devolución del subagente en las ejecuciones en vivo (con y sin
+  pedirle al subagente que la use).
 - **SC-002**: Los tests unitarios y los seis casos end-to-end siguen en verde.
 
 ## Assumptions
 
 - La herramienta de devolución es interna de Claude Code y no ejecuta acciones del banco: solo
   entrega el texto del subagente al agente principal.
-- El hook recibe el tipo de agente (`agent_type`) cuando la llamada la hace un subagente; se
-  verifica en vivo.
+- El hook recibe el tipo de agente (`agent_type`) cuando la llamada la hace un subagente. La
+  evidencia es indirecta: las demás llamadas del analista llegan con él. No se pudo observar la
+  devolución en vivo (ver caso borde).

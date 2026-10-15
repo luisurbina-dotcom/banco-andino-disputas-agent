@@ -14,3 +14,6 @@ uv run pytest -m e2e -v             # seis casos con el agente real
 | Sonda | 4 corridas de C6 registrando toda herramienta ajena que llega al guardia: solo `Agent` (la delegación del principal). Desde el hallazgo, en 18 corridas el subagente no volvió a usar `SubagentHandback` (es intermitente), así que no se observó en vivo con la corrección puesta |
 | Evidencia del `agent_type` | Las llamadas que hace el subagente dentro de su contexto llegan con `agent_type` (su `consultar_transacciones` se registra como `analista-transacciones`, y `pre_reglas` depende de eso). Si `SubagentHandback` llegara sin él, el guardia la niega (falla cerrada): nunca peor que antes |
 | e2e | ✅ 6/6 en 2 min 05 s |
+| Sonda forzada (tras la revisión) | 2 corridas de C6 con el prompt del analista pidiendo explícitamente entregar el resultado con `SubagentHandback`, registrando `PreToolUse`, `PostToolUse` y `PostToolUseFailure` de toda herramienta ajena: solo aparece `Agent`; el subagente no la llama (no se le ofrece en el entorno actual), 0 negaciones, la consulta la hace el subagente |
+| Riesgo residual | No se pudo observar la llamada con la corrección puesta. Si vuelve y llega sin `agent_type` del analista, se niega como antes (falla cerrada). Para que, si llega con él, no la frene la capa de permisos, el guardia la autoriza con `allow` explícito solo en esa rama |
+
