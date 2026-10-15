@@ -105,6 +105,9 @@ echo "011 · Entregables"
 check "README.md existe" test -f README.md
 check "README enlaza el GitHub Project" grep -qF "github.com/users/luisurbina-dotcom/projects/1" README.md
 check "README tiene la sección del video de funcionamiento" grep -qF "Video de funcionamiento" README.md
+if grep -qi "pendiente; el autor" README.md; then
+  printf '  AVISO  %s\n' "README: falta el enlace al video de funcionamiento (acción del autor)"
+fi
 check "DECISIONES.md existe" test -f DECISIONES.md
 check "DECISIONES.md cubre las 11 necesidades" python3 -c 'import re,sys; t=open("DECISIONES.md").read(); sys.exit(sorted(set(int(n) for n in re.findall(r"^\| (\d+) \|", t, re.M))) != list(range(1,12)))'
 palabras=$(wc -w < DECISIONES.md 2>/dev/null || echo 9999)
