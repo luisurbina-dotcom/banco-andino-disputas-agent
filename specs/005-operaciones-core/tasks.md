@@ -75,7 +75,7 @@ description: "Tareas de implementación: operaciones del core"
 
 - [X] T013 Ejecutar `uv run pytest -q`, `uv run ruff check .`, `uv run ruff format --check .` y `bash scripts/verificar_ecosistema.sh`; suite de `src/mcp_server` < 5 s
 - [X] T014 Verificación en vivo C1–C9 de `quickstart.md` con sesiones nuevas `claude -p` (C9 con la variable de entorno); registrar resultados
-- [ ] T015 Cerrar el ticket con `/abrir-pr 5`
+- [X] T015 Cerrar el ticket con `/abrir-pr 5`
 
 ---
 

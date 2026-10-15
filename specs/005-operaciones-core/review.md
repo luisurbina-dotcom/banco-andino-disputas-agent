@@ -55,5 +55,18 @@ los cambios en una sola operación. Es el costo esperado de autocorregir despué
 
 ## Compuerta de `/abrir-pr`
 
-**Veredicto NO CUMPLE → el PR no se abre** hasta que una persona decida (aceptación explícita con
-justificación, o esperar al #6). Ver la sección siguiente cuando se resuelva.
+**Veredicto NO CUMPLE → el PR no se abrió** y se pidió una decisión humana.
+
+### Aceptación explícita del responsable (2026-10-15)
+
+El responsable (Luis F. Urbina Moreno) **acepta** fusionar el #5 con el principio II pendiente,
+con esta justificación:
+
+1. Ningún agente usa todavía estas herramientas: el agente se construye en el #6, el siguiente
+   ticket, que agrega los hooks `PreToolUse`/`PostToolUse` del Agent SDK para las reglas 1 y 2.
+2. Mientras tanto, el servidor ya protege las reglas 1 y 2 con datos del core (verificación en
+   memoria, monto leído por `id_transaccion`); nada depende del prompt.
+3. Esperar al #6 obligaría a mezclar dos tickets en un PR y degradaría la trazabilidad por ticket.
+
+**Condición**: el PR del #6 debe pasar `/revisar-cumplimiento` con el principio II en CUMPLE; si no,
+el #6 no se fusiona. Alternativa descartada: esperar al #6 con una rama apilada.
