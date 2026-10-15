@@ -27,7 +27,7 @@ dev = [
 
 [tool.pytest.ini_options]
 testpaths = ["src", ".claude/hooks"]
-markers = ["e2e: casos end-to-end que llaman al modelo (requieren ANTHROPIC_API_KEY)"]
+markers = ["e2e: casos end-to-end con el modelo real (sesión de Claude Code o ANTHROPIC_API_KEY)"]
 addopts = "-m 'not e2e'"
 
 [tool.ruff]
