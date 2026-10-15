@@ -18,7 +18,10 @@ Argumentos: `$ARGUMENTS` → número de issue, acción y, si la acción es `come
 1. Busca el item del issue en el Project (`projects_list` / `projects_get`). Si el issue no está
    en el Project, agrégalo (`projects_write`).
 2. Obtén el id del campo `Status` y el de la opción pedida **por nombre**; no los supongas.
-3. Actualiza el campo con `projects_write` (método de actualización de item).
+3. Actualiza el campo con `projects_write` (`update_project_item`) usando la forma por nombre:
+   `updated_field: {"name": "Status", "value": "<opción>"}`. La forma por id
+   (`{"id": <campo>, "value": …}`) espera el id de la opción y responde 400 con un nombre
+   (comprobado al cerrar el #3).
 4. Confirma leyendo de nuevo el item y responde `#<issue> → <estado>`.
 
 ## Comentar
