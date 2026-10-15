@@ -26,11 +26,13 @@ Python 3.12 con uv.
 
 ## Flujo de trabajo
 
-1. Un ticket del GitHub Project → una rama `NNN-nombre` → una carpeta `specs/NNN-nombre/`.
-2. `/speckit-specify` con el issue como insumo, luego `plan`, `tasks`, `analyze`, `implement`.
-3. Spec primero: ver principio IV de la constitución.
-4. Antes del PR: revisión independiente y revisión de cumplimiento.
-5. El PR lleva `Closes #N`. Commits en español, estilo `tipo(alcance): descripción`.
+1. `/siguiente-ticket`: toma el ticket, lo pasa a In progress, crea la rama `NNN-nombre` y
+   arranca `/speckit-specify` con el issue. Luego `plan`, `tasks`, `analyze`, `implement`.
+2. Spec primero: ver principio IV de la constitución.
+3. `/abrir-pr`: revisión independiente (`code-reviewer`), `/revisar-cumplimiento`, PR con
+   `Closes #N` e In review. Una persona fusiona; el Project pasa el ticket a Done.
+4. Estados y comentarios en GitHub solo por el MCP `github` (`GITHUB_PAT` en tu entorno).
+5. Commits en español, estilo `tipo(alcance): descripción`.
 
 ## Lo personal
 
