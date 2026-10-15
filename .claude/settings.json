@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "enabledMcpjsonServers": ["github"],
+  "enabledMcpjsonServers": ["github", "banco"],
   "permissions": {
     "deny": [
       "Read(./.env)",

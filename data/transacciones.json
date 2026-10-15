@@ -1,0 +1,14 @@
+[
+  {"id_transaccion": "TX-0001", "id_tarjeta": "TAR-001", "dias_atras": 1, "monto": 180000, "comercio": "Tienda Ficticia Norte", "pais": "CO"},
+  {"id_transaccion": "TX-0002", "id_tarjeta": "TAR-001", "dias_atras": 1, "monto": 1250000, "comercio": "Electro Ficticio SAS", "pais": "CO"},
+  {"id_transaccion": "TX-0003", "id_tarjeta": "TAR-001", "dias_atras": 6, "monto": 45000, "comercio": "Café Imaginario", "pais": "CO"},
+  {"id_transaccion": "TX-0004", "id_tarjeta": "TAR-002", "dias_atras": 2, "monto": 60000, "comercio": "Droguería Inventada", "pais": "CO"},
+  {"id_transaccion": "TX-0005", "id_tarjeta": "TAR-003", "dias_atras": 10, "monto": 150000, "comercio": "Ropa Ficticia Centro", "pais": "CO"},
+  {"id_transaccion": "TX-0006", "id_tarjeta": "TAR-004", "dias_atras": 3, "monto": 95000, "comercio": "Supermercado Ejemplo", "pais": "CO"},
+  {"id_transaccion": "TX-0007", "id_tarjeta": "TAR-005", "dias_atras": 4, "monto": 30000, "comercio": "Parqueadero Demo", "pais": "CO"},
+  {"id_transaccion": "TX-0008", "id_tarjeta": "TAR-006", "dias_atras": 7, "monto": 210000, "comercio": "Restaurante Ficticio", "pais": "CO"},
+  {"id_transaccion": "TX-0009", "id_tarjeta": "TAR-007", "dias_atras": 15, "monto": 75000, "comercio": "Librería Inventada", "pais": "CO"},
+  {"id_transaccion": "TX-0010", "id_tarjeta": "TAR-008", "dias_atras": 120, "monto": 320000, "comercio": "Fictional Store Miami", "pais": "US"},
+  {"id_transaccion": "TX-0011", "id_tarjeta": "TAR-008", "dias_atras": 9, "monto": 52000, "comercio": "Gasolinera Ejemplo", "pais": "CO"},
+  {"id_transaccion": "TX-0012", "id_tarjeta": "TAR-009", "dias_atras": 4, "monto": 2000000, "comercio": "Hotel Imaginario Madrid", "pais": "ES"}
+]

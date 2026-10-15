@@ -1,0 +1,11 @@
+[
+  {"id_tarjeta": "TAR-001", "id_cliente": "CLI-001", "ultimos4": "4821", "estado": "activa"},
+  {"id_tarjeta": "TAR-002", "id_cliente": "CLI-002", "ultimos4": "2290", "estado": "activa"},
+  {"id_tarjeta": "TAR-003", "id_cliente": "CLI-003", "ultimos4": "3381", "estado": "activa"},
+  {"id_tarjeta": "TAR-004", "id_cliente": "CLI-004", "ultimos4": "7310", "estado": "activa"},
+  {"id_tarjeta": "TAR-005", "id_cliente": "CLI-005", "ultimos4": "7310", "estado": "activa"},
+  {"id_tarjeta": "TAR-006", "id_cliente": "CLI-006", "ultimos4": "5502", "estado": "activa"},
+  {"id_tarjeta": "TAR-007", "id_cliente": "CLI-006", "ultimos4": "9017", "estado": "activa"},
+  {"id_tarjeta": "TAR-008", "id_cliente": "CLI-007", "ultimos4": "6634", "estado": "activa"},
+  {"id_tarjeta": "TAR-009", "id_cliente": "CLI-008", "ultimos4": "1148", "estado": "activa"}
+]
