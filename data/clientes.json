@@ -1,0 +1,10 @@
+[
+  {"id_cliente": "CLI-001", "nombre": "Ana María Gómez", "documento": "FIC-10000001", "fecha_nacimiento": "1988-04-12"},
+  {"id_cliente": "CLI-002", "nombre": "Carlos Ramírez", "documento": "FIC-10000002", "fecha_nacimiento": "1979-11-03"},
+  {"id_cliente": "CLI-003", "nombre": "Carlos Ramírez", "documento": "FIC-10000003", "fecha_nacimiento": "1993-06-21"},
+  {"id_cliente": "CLI-004", "nombre": "Laura Pérez", "documento": "FIC-10000004", "fecha_nacimiento": "1990-01-30"},
+  {"id_cliente": "CLI-005", "nombre": "Jorge Castro", "documento": "FIC-10000005", "fecha_nacimiento": "1985-09-15"},
+  {"id_cliente": "CLI-006", "nombre": "Sofía Herrera", "documento": "FIC-10000006", "fecha_nacimiento": "1997-02-08"},
+  {"id_cliente": "CLI-007", "nombre": "Andrés Molina", "documento": "FIC-10000007", "fecha_nacimiento": "1982-12-01"},
+  {"id_cliente": "CLI-008", "nombre": "Valentina Rojas", "documento": "FIC-10000008", "fecha_nacimiento": "2000-07-19"}
+]
