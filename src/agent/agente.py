@@ -53,14 +53,21 @@ class Turno:
     num_turns: int = 0
 
 
-def construir_opciones(estado: EstadoSesion, modelo: str | None = None) -> ClaudeAgentOptions:
+def construir_opciones(
+    estado: EstadoSesion, modelo: str | None = None, prompt_sistema: str | None = None
+) -> ClaudeAgentOptions:
+    """`prompt_sistema` solo se reemplaza en pruebas (p. ej. un modelo que intenta saltarse las
+    reglas): las garantías no dependen del prompt."""
     post = post_resultado(estado)
     return ClaudeAgentOptions(
-        system_prompt=PROMPT_SISTEMA,
+        system_prompt=prompt_sistema or PROMPT_SISTEMA,
         # Un servidor banco por conversación, con el mismo intérprete del entorno.
         mcp_servers={
             "banco": {"type": "stdio", "command": sys.executable, "args": ["-m", "mcp_server"]}
         },
+        # Solo el servidor banco: sin esto se heredan los conectores MCP de la cuenta del
+        # desarrollador (p. ej. Drive), comprobado en vivo.
+        strict_mcp_config=True,
         allowed_tools=list(HERRAMIENTAS),
         tools=[],  # sin herramientas integradas (archivos, shell): solo las del banco
         setting_sources=[],  # no hereda CLAUDE.md, reglas ni hooks de desarrollo del repo
@@ -80,14 +87,18 @@ class AgenteDisputas:
         modelo: str | None = None,
         estado: EstadoSesion | None = None,
         fabrica_cliente=ClaudeSDKClient,
+        prompt_sistema: str | None = None,
     ):
         self.estado = estado or EstadoSesion.desde_core()
         self._modelo = modelo
+        self._prompt = prompt_sistema
         self._fabrica = fabrica_cliente
         self._cliente = None
 
     async def __aenter__(self) -> "AgenteDisputas":
-        self._cliente = self._fabrica(options=construir_opciones(self.estado, self._modelo))
+        self._cliente = self._fabrica(
+            options=construir_opciones(self.estado, self._modelo, self._prompt)
+        )
         try:
             await self._cliente.connect()
         except (CLINotFoundError, CLIConnectionError, ProcessError) as error:

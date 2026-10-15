@@ -20,6 +20,7 @@ def test_opciones_aislan_al_agente_y_registran_las_garantias(estado):
     assert len(HERRAMIENTAS) == 6
     assert all(h.startswith("mcp__banco__") for h in HERRAMIENTAS)
     assert opciones.tools == []
+    assert opciones.strict_mcp_config is True  # sin conectores MCP heredados de la cuenta
     assert opciones.setting_sources == []
     assert opciones.max_turns is None  # el turno lo cierra la razón de parada, no un tope
     for evento in ("PreToolUse", "PostToolUse", "PostToolUseFailure"):
@@ -95,3 +96,9 @@ async def test_sin_cli_el_agente_no_arranca_con_un_mensaje_claro(estado):
     with pytest.raises(AgenteNoDisponible, match="Claude Code"):
         async with AgenteDisputas(estado=estado, fabrica_cliente=SinCli):
             pass
+
+
+def test_el_prompt_se_puede_reemplazar_sin_tocar_las_garantias(estado):
+    opciones = construir_opciones(estado, prompt_sistema="Modelo de prueba desobediente")
+    assert opciones.system_prompt == "Modelo de prueba desobediente"
+    assert len(opciones.hooks["PreToolUse"][0].hooks) == 1
