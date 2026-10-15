@@ -112,8 +112,10 @@ class AgenteDisputas:
         )
         try:
             await self._cliente.connect()
-        except (CLINotFoundError, CLIConnectionError, ProcessError) as error:
+        except BaseException as error:
             await self.__aexit__(None, None, None)
+            if not isinstance(error, (CLINotFoundError, CLIConnectionError, ProcessError)):
+                raise
             raise AgenteNoDisponible(
                 "No se pudo iniciar el agente: instala Claude Code y autentícate (o define "
                 f"ANTHROPIC_API_KEY en tu entorno). Detalle: {type(error).__name__}"
@@ -121,11 +123,13 @@ class AgenteDisputas:
         return self
 
     async def __aexit__(self, *exc) -> None:
-        if self._cliente is not None and hasattr(self._cliente, "disconnect"):
-            await self._cliente.disconnect()
-        if self._directorio is not None:
-            self._directorio.cleanup()
-            self._directorio = None
+        try:
+            if self._cliente is not None and hasattr(self._cliente, "disconnect"):
+                await self._cliente.disconnect()
+        finally:
+            if self._directorio is not None:
+                self._directorio.cleanup()
+                self._directorio = None
 
     async def responder(self, texto: str) -> Turno:
         inicio = len(self.estado.eventos)

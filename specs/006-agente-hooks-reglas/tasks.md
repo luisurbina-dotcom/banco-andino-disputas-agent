@@ -65,7 +65,7 @@ description: "Tareas de implementación: agente de disputas y garantías de las 
 
 - [X] T012 Ejecutar `uv run pytest -q`, `uv run ruff check .`, `uv run ruff format --check .` y `bash scripts/verificar_ecosistema.sh`
 - [X] T013 Verificación en vivo D1–D6 con `scripts/conversar.py` (incluida la confirmación de `tools=[]`, research R7); registrar resultados en `quickstart.md`
-- [ ] T014 Cerrar el ticket con `/abrir-pr 6` (el cumplimiento debe dar CUMPLE en el principio II: condición del #5)
+- [X] T014 Cerrar el ticket con `/abrir-pr 6` (el cumplimiento debe dar CUMPLE en el principio II: condición del #5)
 
 ---
 

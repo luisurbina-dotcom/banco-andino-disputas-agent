@@ -43,3 +43,21 @@
 Observación menor (data-model sin `EstadoSesion.tarjetas`): **corregida**.
 
 **Condición heredada del #5 (principio II en CUMPLE): satisfecha.**
+
+## Re-revisión del commit de correcciones (`code-reviewer`)
+
+- **Alcance**: `git show 2116d2e`, `53f281b`. **Veredicto**: APROBADO CON OBSERVACIONES; los 10
+  hallazgos corregidos; ningún camino nuevo para saltarse las reglas; sin negaciones indebidas en
+  el flujo normal.
+
+| # | Sev. | Hallazgo | Resolución |
+|---|---|---|---|
+| 11 | BAJA | En `post_resultado`, `_nombre` y `tool_input` fuera del `try`. | **Corregido**: dentro del `try`; ante excepción retira la verificación; test. |
+| 12 | BAJA | `ultimos4` numérico se negaba como producto ajeno (mensaje engañoso). | **Corregido**: comparación como texto; test con `4821` numérico. |
+| 13 | BAJA | Si `disconnect()` fallaba no se borraba el directorio; otros errores de `connect()` no limpiaban. | **Corregido**: `try/finally` en `__aexit__`; limpieza ante cualquier error de `connect()`. |
+| 14 | BAJA | El test de fallo interno fallaba por `KeyError` antes del monto. | **Corregido**: conserva `id_tarjeta`. |
+| 15 | BAJA | Faltaban casos positivos (bloqueo propio, `7310` para cada titular). | **Corregido**: tests agregados. |
+
+## Compuerta de `/abrir-pr`
+
+Sin hallazgos ALTA pendientes y cumplimiento **CUMPLE** (principio II incluido) → se abre el PR.

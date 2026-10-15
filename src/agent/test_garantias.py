@@ -187,7 +187,7 @@ async def test_regla2_transaccion_desconocida_se_niega(estado):
 
 async def test_fallo_interno_niega_por_seguridad(estado):
     await _verificar(estado)
-    estado.transacciones["TX-0001"] = {"monto": "no-es-un-numero"}
+    estado.transacciones["TX-0001"] = {"id_tarjeta": "TAR-001", "monto": "no-es-un-numero"}
     assert await _disputar(estado, "TX-0001") == ("deny", MOTIVO_FALLO)
 
 
@@ -237,3 +237,25 @@ async def test_monto_no_entero_niega_por_seguridad(estado):
     await _verificar(estado)
     estado.transacciones["TX-0001"] = {**estado.transacciones["TX-0001"], "monto": 500000.9}
     assert await _disputar(estado, "TX-0001") == ("deny", MOTIVO_FALLO)
+
+
+async def test_bloquear_tarjeta_propia_se_permite(estado):
+    await _verificar(estado)
+    args = {"id_cliente": "CLI-001", "ultimos4": 4821, "motivo": "x"}  # también como número
+    salida = await pre_reglas(estado)(entrada_pre("bloquear_tarjeta", args), "t", None)
+    assert _decision(salida) == (None, None)
+
+
+@pytest.mark.parametrize("id_cliente", ["CLI-004", "CLI-005"])
+async def test_ultimos4_compartidos_se_permiten_a_cada_titular(estado, id_cliente):
+    respuesta = {"verificado": True, "id_cliente": id_cliente, "nombre": "x"}
+    await _verificar(estado, respuesta, id_cliente=id_cliente)
+    args = {"id_cliente": id_cliente, "ultimos4": "7310"}
+    salida = await pre_reglas(estado)(entrada_pre("consultar_transacciones", args), "t", None)
+    assert _decision(salida) == (None, None)
+
+
+async def test_post_con_entrada_invalida_retira_la_verificacion(estado):
+    await _verificar(estado)
+    await post_resultado(estado)(None, "t", None)
+    assert estado.verificado is None

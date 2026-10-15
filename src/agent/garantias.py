@@ -118,7 +118,7 @@ def _motivo_de_negacion(estado: EstadoSesion, nombre: str, argumentos: dict) -> 
     propias = {
         t["ultimos4"] for t in estado.tarjetas.values() if t["id_cliente"] == estado.verificado
     }
-    if argumentos.get("ultimos4") not in propias:
+    if str(argumentos.get("ultimos4")) not in propias:  # 4821 o "4821": mismo producto
         return MOTIVO_PRODUCTO_AJENO
     return None
 
@@ -141,9 +141,9 @@ def pre_reglas(estado: EstadoSesion):
 
 def post_resultado(estado: EstadoSesion):
     async def hook(entrada: dict, tool_use_id, contexto) -> dict:
-        nombre = _nombre(entrada)
-        argumentos = entrada.get("tool_input") or {}
         try:
+            nombre = _nombre(entrada)
+            argumentos = entrada.get("tool_input") or {}
             if entrada.get("hook_event_name") == "PostToolUseFailure":
                 datos = _interpretar(entrada.get("error"))
             else:
@@ -170,8 +170,8 @@ def post_resultado(estado: EstadoSesion):
                 and datos.get("id_cliente") == argumentos.get("id_cliente")
             ):
                 estado.verificado = argumentos["id_cliente"]
-        except Exception:  # fail-closed: ante la duda, no se marca la sesión como verificada
-            pass
+        except Exception:  # fail-closed: ante la duda, la sesión deja de estar verificada
+            estado.verificado = None
         return {}
 
     return hook
