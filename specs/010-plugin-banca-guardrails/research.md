@@ -38,7 +38,7 @@ components, loading, cli-reference, sub-agents, skills, hooks), consultada el 20
 
 - La skill se invoca como `/banca-guardrails:revisar-cumplimiento`; el agente es
   `banca-guardrails:compliance-auditor` y la skill lo referencia así en `agent:`. Esto último no
-  está explícito en la documentación: se verifica en vivo (quickstart Q4).
+  está explícito en la documentación: se verifica en vivo (quickstart Q5).
 
 ## R5. Fuente única de verdad
 

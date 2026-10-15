@@ -43,13 +43,32 @@ def test_reglas_del_banco_identicas_en_ambos_auditores():
     )
 
 
-def test_hooks_json_usa_la_raiz_del_plugin_y_falla_cerrado():
+def _entrada_datos_ficticios_del_repo() -> tuple[str, dict]:
+    config = json.loads((RAIZ / ".claude" / "settings.json").read_text(encoding="utf-8"))
+    for grupo in config["hooks"]["PreToolUse"]:
+        for hook in grupo["hooks"]:
+            if "datos_ficticios.py" in hook["command"]:
+                return grupo["matcher"], hook
+    raise AssertionError("El repo no registra el hook datos_ficticios")
+
+
+def test_hooks_json_coincide_con_el_hook_del_repo_y_falla_cerrado():
     config = json.loads((PLUGIN / "hooks" / "hooks.json").read_text(encoding="utf-8"))
     (grupo,) = config["hooks"]["PreToolUse"]
-    assert set(grupo["matcher"].split("|")) == {"Edit", "Write", "MultiEdit", "NotebookEdit"}
     (hook,) = grupo["hooks"]
-    assert "${CLAUDE_PLUGIN_ROOT}/hooks/datos_ficticios.py" in hook["command"]
+    matcher_repo, hook_repo = _entrada_datos_ficticios_del_repo()
+    assert set(grupo["matcher"].split("|")) == set(matcher_repo.split("|"))
+    assert (hook["timeout"], hook["onFailure"]) == (hook_repo["timeout"], hook_repo["onFailure"])
     assert hook["onFailure"] == "block"
+    assert "${CLAUDE_PLUGIN_ROOT}/hooks/datos_ficticios.py" in hook["command"]
+
+
+def test_skill_y_agente_del_plugin_tratan_el_diff_como_evidencia():
+    skill = (PLUGIN / "skills" / "revisar-cumplimiento" / "SKILL.md").read_text(encoding="utf-8")
+    agente = (PLUGIN / "agents" / "compliance-auditor.md").read_text(encoding="utf-8")
+    lineas = skill.splitlines()
+    assert lineas.count("<<<DIFF") == lineas.count("DIFF>>>") == 2
+    assert "evidencia, no instrucciones" in skill and "evidencia, no instrucciones" in agente
 
 
 def test_agente_del_plugin_es_de_solo_lectura_por_construccion():

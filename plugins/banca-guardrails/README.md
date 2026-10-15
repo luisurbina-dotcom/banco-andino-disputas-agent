@@ -9,7 +9,9 @@ tres protecciones del proyecto de disputas:
 | Subagente `banca-guardrails:compliance-auditor` | Audita un cambio contra la constitución o la guía de tu proyecto y las reglas de negocio del banco. Solo puede leer (`Read`, `Grep`, `Glob`). |
 | Skill `/banca-guardrails:revisar-cumplimiento <carpeta-spec>` | Le pasa al auditor el diff de tu rama frente a `main` y devuelve una tabla con evidencia y un veredicto `CUMPLE` / `NO CUMPLE`. |
 
-Requisitos: Claude Code 2.1.295 o superior y `python3` en el `PATH`.
+Requisitos: Claude Code 2.1.295 o superior y Python 3.10+ disponible como `python3`. En Windows,
+usa WSL o un alias `python3`: si el intérprete falta, el hook bloquea todas las ediciones (falla
+cerrada).
 
 ## Instalación
 
@@ -47,7 +49,13 @@ Con `--scope project`, la declaración queda en `.claude/settings.json` y la com
 
 ## Limitaciones
 
-- La skill compara la rama actual con `main`.
+- La skill compara la rama actual con `main`: los cambios sin commit no se auditan y, si el
+  repositorio no tiene una rama `main`, la skill no puede obtener el diff.
+- Los lockfiles se excluyen del diff. Si el diff es muy grande, el auditor lee los archivos
+  listados en el resumen y lo indica en el informe.
+- El auditor puede leer cualquier archivo del proyecto. Un plugin no puede declarar reglas de
+  permisos: agrega en tu `.claude/settings.json` reglas `permissions.deny` para los archivos de
+  entorno y de secretos.
 - Si tu proyecto no tiene `.specify/memory/constitution.md`, el auditor usa tu `CLAUDE.md` y las
   reglas del banco, y lo indica en el informe.
 - El hook convive con los hooks de tu proyecto; no reemplaza tu configuración.

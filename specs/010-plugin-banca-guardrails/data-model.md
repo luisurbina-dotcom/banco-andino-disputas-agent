@@ -26,4 +26,5 @@
 |---|---|---|
 | `hooks/datos_ficticios.py`, `detector.py`, `comun.py` | `.claude/hooks/` | bytes idénticos |
 | `agents/compliance-auditor.md` | `.claude/agents/compliance-auditor.md` | bloque "reglas del banco" idéntico (entre marcadores) |
-| `skills/revisar-cumplimiento/SKILL.md` | `.claude/skills/revisar-cumplimiento/SKILL.md` | versión portable (sin relación textual) |
+| `skills/revisar-cumplimiento/SKILL.md` | `.claude/skills/revisar-cumplimiento/SKILL.md` | versión portable; las reglas normativas viven solo en el bloque compartido del agente |
+| `hooks/hooks.json` | entrada de `datos_ficticios.py` en `.claude/settings.json` | mismo matcher, timeout y `onFailure` |

@@ -5,7 +5,7 @@
 ## Fase 1: Verificación primero
 
 - [X] T001 `.claude/hooks/test_plugin.py`: copias del hook idénticas; bloque de reglas del banco
-  idéntico entre auditores; el hook del plugin, ejecutado desde su carpeta, bloquea una tarjeta
+  idéntico entre auditores; el hook del plugin, ejecutado desde un directorio ajeno, bloquea una tarjeta
   con forma real y permite datos ficticios; `hooks.json` usa `${CLAUDE_PLUGIN_ROOT}` y
   `onFailure: block`; el agente del plugin no tiene Bash ni herramientas de escritura (R3, R5)
 
@@ -23,7 +23,7 @@
 - [X] T007 [US4] Sección del plugin en `scripts/verificar_ecosistema.sh` (archivos, JSON válido,
   `claude plugin validate --strict` si el CLI está disponible)
 - [X] T008 Q1–Q2 y prueba de instalación aislada Q3–Q7; registrar en `quickstart.md`
-- [ ] T009 Cerrar el ticket con `/abrir-pr 10`
+- [X] T009 Cerrar el ticket con `/abrir-pr 10`
 
 ## Dependencias
 
