@@ -31,6 +31,9 @@ Verificado el 2026-10-15 con `claude-agent-sdk` 0.2.167 y una sonda real (agente
   (p. ej. `'{"verificado":true,"id_cliente":"CLI-001",…}'`). Negar = devolver
   `{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny",
   "permissionDecisionReason": motivo}}`; el modelo recibe el motivo.
+- **Pendiente de confirmar en vivo**: si un error de herramienta MCP (`isError`) llega como
+  `PostToolUse` con el texto del error o como `PostToolUseFailure`; `post_resultado` se registra
+  en ambos y reconoce el JSON de error en cualquiera.
 - **Robustez**: `post_resultado` acepta texto JSON, dict o lista de bloques de contenido; si no
   puede interpretar la respuesta de `verificar_identidad`, **no** marca la sesión (fail-closed).
 
