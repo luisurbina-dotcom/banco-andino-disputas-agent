@@ -213,3 +213,14 @@ def test_fallas_programadas_se_consumen_y_desaparecen(core):
 def test_numero_de_fallas_negativo_es_error_de_programacion(core):
     with pytest.raises(ValueError):
         core.programar_fallas("consultar_transacciones", -1)
+
+
+def test_bloqueo_revoca_una_verificacion_previa(core, titular_4821):
+    id_cliente = titular_4821["id_cliente"]
+    core.verificar_identidad(id_cliente, titular_4821["fecha_nacimiento"])
+    assert core.esta_verificado(id_cliente)
+    for _ in range(2):
+        core.verificar_identidad(id_cliente, "1900-01-01")
+    with pytest.raises(ErrorCore):
+        core.verificar_identidad(id_cliente, "1900-01-01")
+    assert core.esta_verificado(id_cliente) is False

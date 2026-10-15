@@ -167,7 +167,12 @@ class Operaciones:
                 "RESUMEN_INCOMPLETO",
                 "El caso necesita una causa válida, una descripción y una acción recomendada.",
             )
+        if id_transacciones and id_cliente is None:
+            raise _validacion(
+                "RESUMEN_INCOMPLETO", "Indica el cliente al incluir transacciones en el caso."
+            )
         cliente = None
+        tarjetas_del_cliente: set[str] = set()
         if id_cliente is not None:
             datos_cliente = self.core.cliente(id_cliente)
             if datos_cliente is None:
@@ -175,11 +180,17 @@ class Operaciones:
                     "CLIENTE_NO_EXISTE", "No existe un cliente con ese identificador."
                 )
             cliente = {"id_cliente": id_cliente, "nombre": datos_cliente["nombre"]}
+            tarjetas_del_cliente = {
+                t["id_tarjeta"] for t in self.core.datos.tarjetas if t["id_cliente"] == id_cliente
+            }
         transacciones = []
         for id_tx in id_transacciones or []:
             tx = self._transaccion(id_tx)
-            if tx is None:
-                raise _validacion("TRANSACCION_NO_ENCONTRADA", f"No existe la transacción {id_tx}.")
+            if tx is None or tx["id_tarjeta"] not in tarjetas_del_cliente:
+                raise _validacion(
+                    "TRANSACCION_NO_ENCONTRADA",
+                    f"La transacción {id_tx} no pertenece a las tarjetas del cliente.",
+                )
             transacciones.append(_transaccion_publica(tx))
         caso = {
             "id_caso": f"CASO-{len(self.core.casos) + 1:04d}",
@@ -194,4 +205,10 @@ class Operaciones:
             },
         }
         self.core.casos.append(caso)
-        return caso
+        # Al modelo solo vuelve el acuse: el resumen enriquecido es para el analista (no es una
+        # vía para leer datos de transacciones sin identidad verificada).
+        return {
+            "id_caso": caso["id_caso"],
+            "estado": caso["estado"],
+            "transacciones_incluidas": len(transacciones),
+        }

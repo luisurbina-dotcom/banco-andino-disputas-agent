@@ -9,9 +9,10 @@ responder `TRANSITORIO/CORE_NO_DISPONIBLE` (`reintentable: true`) si hay fallas 
 **Descripción**:
 
 > Lista las transacciones de una tarjeta del cliente en un rango de fechas (AAAA-MM-DD; por
-> defecto los últimos 30 días). Requiere que el cliente haya pasado verificar_identidad. Úsala
-> para encontrar los cobros que el cliente no reconoce antes de disputarlos. Una lista vacía no es
-> un error. Si recibes un error TRANSITORIO, reintenta la llamada.
+> defecto los últimos 30 días). Requiere que el cliente haya pasado verificar_identidad; no la
+> uses con clientes sin verificar ni si el cliente solo pidió hablar con una persona. Úsala para
+> encontrar los cobros que el cliente no reconoce antes de disputarlos. Una lista vacía no es un
+> error. Si recibes un error TRANSITORIO, reintenta la llamada.
 
 **Entrada**: `id_cliente`, `ultimos4`, `desde` (opcional), `hasta` (opcional).
 
@@ -24,9 +25,10 @@ responder `TRANSITORIO/CORE_NO_DISPONIBLE` (`reintentable: true`) si hay fallas 
 
 **Descripción**:
 
-> Abre una disputa sobre una transacción del cliente verificado. El core aplica la política: hasta
-> $500.000 la disputa se abre; si responde MONTO_SUPERA_UMBRAL o POLITICA_NO_CUBRE, no la reintentes:
-> escala el caso con escalar_a_analista. No la uses si el cliente pidió hablar con una persona.
+> Abre una disputa sobre una transacción del cliente verificado. El core aplica la política:
+> hasta $500.000 la disputa se abre; si responde MONTO_SUPERA_UMBRAL o POLITICA_NO_CUBRE, no la
+> reintentes: escala el caso con escalar_a_analista. Si responde DISPUTA_EXISTENTE, informa al
+> cliente que ya hay una disputa en curso. No la uses si el cliente pidió hablar con una persona.
 
 **Entrada**: `id_cliente`, `id_transaccion`, `motivo`.
 
@@ -41,7 +43,8 @@ responder `TRANSITORIO/CORE_NO_DISPONIBLE` (`reintentable: true`) si hay fallas 
 
 > Bloquea de inmediato una tarjeta del cliente verificado por sospecha de fraude; no requiere
 > aprobación adicional. Si la tarjeta ya estaba bloqueada, lo indica sin error. Úsala cuando el
-> cliente sospeche clonación, robo o pérdida.
+> cliente sospeche clonación, robo o pérdida; no la uses si el cliente no lo pidió ni expresó
+> sospecha de fraude.
 
 **Entrada**: `id_cliente`, `ultimos4`, `motivo`.
 
@@ -63,11 +66,14 @@ responder `TRANSITORIO/CORE_NO_DISPONIBLE` (`reintentable: true`) si hay fallas 
 `IDENTIDAD_BLOQUEADA` | `OTRO`), `descripcion`, `accion_recomendada`, `id_cliente` (opcional),
 `id_transacciones` (lista, opcional), `acciones_realizadas` (lista, opcional).
 
-**Salida**: `{"id_caso", "estado": "en_cola_analista", "resumen": {…}}` (data-model § Caso).
+**Salida**: `{"id_caso", "estado": "en_cola_analista", "transacciones_incluidas": n}`. El
+resumen completo (data-model § Caso) queda en el core para el analista y no se devuelve al
+modelo, para no abrir una vía de lectura de datos sin identidad verificada.
 
 **Errores**: `VALIDACION/RESUMEN_INCOMPLETO` (descripción o acción recomendada vacías, o causa
 fuera de las 5 en llamadas directas al core; por MCP la restringe el esquema),
-`VALIDACION/TRANSACCION_NO_ENCONTRADA`, `VALIDACION/CLIENTE_NO_EXISTE`.
+`VALIDACION/TRANSACCION_NO_ENCONTRADA` (inexistente o de otro cliente),
+`VALIDACION/CLIENTE_NO_EXISTE`. Incluir transacciones exige `id_cliente`.
 
 ## Configuración
 

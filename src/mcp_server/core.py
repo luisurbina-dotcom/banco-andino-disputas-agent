@@ -154,6 +154,7 @@ class Core:
         fallidos = self._intentos_fallidos.get(id_cliente, 0) + 1
         self._intentos_fallidos[id_cliente] = fallidos
         if fallidos >= MAX_INTENTOS:
+            self._verificados.discard(id_cliente)  # una identidad bloqueada deja de habilitar
             raise _identidad_bloqueada()
         return {
             "verificado": False,

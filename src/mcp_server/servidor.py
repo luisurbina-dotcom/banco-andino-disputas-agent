@@ -41,21 +41,25 @@ DESCRIPCION_VERIFICAR = (
     "analista."
 )
 DESCRIPCION_CONSULTAR = (
-    "Lista las transacciones de una tarjeta del cliente en un rango de fechas (AAAA-MM-DD; por "
-    "defecto los últimos 30 días). Requiere que el cliente haya pasado verificar_identidad. Úsala "
-    "para encontrar los cobros que el cliente no reconoce antes de disputarlos. Una lista vacía no "
-    "es un error. Si recibes un error TRANSITORIO, reintenta la llamada."
+    "Lista las transacciones de una tarjeta del cliente en un rango de fechas (AAAA-MM-DD; "
+    "por defecto los últimos 30 días). Requiere que el cliente haya pasado "
+    "verificar_identidad; no la uses con clientes sin verificar ni si el cliente solo pidió "
+    "hablar con una persona. Úsala para encontrar los cobros que el cliente no reconoce antes"
+    " de disputarlos. Una lista vacía no es un error. Si recibes un error TRANSITORIO, "
+    "reintenta la llamada."
 )
 DESCRIPCION_DISPUTAR = (
-    "Abre una disputa sobre una transacción del cliente verificado. El core aplica la política: "
-    "hasta $500.000 la disputa se abre; si responde MONTO_SUPERA_UMBRAL o POLITICA_NO_CUBRE, no la "
-    "reintentes: escala el caso con escalar_a_analista. No la uses si el cliente pidió hablar con "
-    "una persona."
+    "Abre una disputa sobre una transacción del cliente verificado. El core aplica la "
+    "política: hasta $500.000 la disputa se abre; si responde MONTO_SUPERA_UMBRAL o "
+    "POLITICA_NO_CUBRE, no la reintentes: escala el caso con escalar_a_analista. Si responde "
+    "DISPUTA_EXISTENTE, informa al cliente que ya hay una disputa en curso. No la uses si el "
+    "cliente pidió hablar con una persona."
 )
 DESCRIPCION_BLOQUEAR = (
-    "Bloquea de inmediato una tarjeta del cliente verificado por sospecha de fraude; no requiere "
-    "aprobación adicional. Si la tarjeta ya estaba bloqueada, lo indica sin error. Úsala cuando el "
-    "cliente sospeche clonación, robo o pérdida."
+    "Bloquea de inmediato una tarjeta del cliente verificado por sospecha de fraude; no "
+    "requiere aprobación adicional. Si la tarjeta ya estaba bloqueada, lo indica sin error. "
+    "Úsala cuando el cliente sospeche clonación, robo o pérdida; no la uses si el cliente no "
+    "lo pidió ni expresó sospecha de fraude."
 )
 DESCRIPCION_ESCALAR = (
     "Pasa el caso a un analista humano, que NO ve la conversación. Úsala de inmediato si el "
@@ -70,16 +74,36 @@ core = Core(cargar())
 ops = Operaciones(core)
 
 
+HERRAMIENTAS_CON_FALLAS = (
+    "consultar_transacciones",
+    "iniciar_disputa",
+    "bloquear_tarjeta",
+    "escalar_a_analista",
+)
+
+
 def configurar_fallas(texto: str) -> None:
-    """Programa fallas transitorias con el formato `herramienta:N[,herramienta:N]`."""
+    """Programa fallas transitorias con el formato `herramienta:N[,herramienta:N]`.
+
+    Valida todo antes de programar: un error de tipeo no debe dejar la demo sin falla.
+    """
+    programadas = []
     for parte in texto.split(","):
         coincidencia = re.fullmatch(r"\s*([a-z_]+):(\d+)\s*", parte)
-        if not coincidencia:
+        if not coincidencia or coincidencia.group(1) not in HERRAMIENTAS_CON_FALLAS:
             raise ValueError(
                 "BANCO_FALLAS_TRANSITORIAS debe tener el formato herramienta:N[,herramienta:N] "
-                f"(recibido: {texto!r})"
+                f"con herramientas de {HERRAMIENTAS_CON_FALLAS} (recibido: {texto!r})"
             )
-        core.programar_fallas(coincidencia.group(1), int(coincidencia.group(2)))
+        programadas.append((coincidencia.group(1), int(coincidencia.group(2))))
+    for herramienta, n in programadas:
+        core.programar_fallas(herramienta, n)
+
+
+def aplicar_configuracion_del_entorno() -> None:
+    configuracion = os.environ.get("BANCO_FALLAS_TRANSITORIAS")
+    if configuracion:
+        configurar_fallas(configuracion)
 
 
 def _ejecutar(operacion, *args, **kwargs) -> dict:
@@ -143,7 +167,5 @@ def escalar_a_analista(
 
 
 def main() -> None:
-    configuracion = os.environ.get("BANCO_FALLAS_TRANSITORIAS")
-    if configuracion:
-        configurar_fallas(configuracion)
+    aplicar_configuracion_del_entorno()
     mcp.run()

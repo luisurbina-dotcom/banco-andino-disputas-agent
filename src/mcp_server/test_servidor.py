@@ -184,3 +184,29 @@ async def test_falla_transitoria_configurada_por_mcp(cliente, titular_4821):
 def test_configuracion_de_fallas_invalida(texto):
     with pytest.raises(ValueError, match="BANCO_FALLAS_TRANSITORIAS"):
         servidor.configurar_fallas(texto)
+
+
+def test_nombre_de_herramienta_desconocido_en_la_configuracion():
+    with pytest.raises(ValueError, match="BANCO_FALLAS_TRANSITORIAS"):
+        servidor.configurar_fallas("consultar_transaccion:1")
+    with pytest.raises(ValueError, match="BANCO_FALLAS_TRANSITORIAS"):
+        servidor.configurar_fallas("buscar_cliente:1")
+
+
+def test_configuracion_parcialmente_invalida_no_programa_nada(monkeypatch, datos):
+    core = Core(datos)
+    monkeypatch.setattr(servidor, "core", core)
+    with pytest.raises(ValueError):
+        servidor.configurar_fallas("consultar_transacciones:1,x:dos")
+    core.consumir_falla("consultar_transacciones")  # no quedó programada
+
+
+def test_el_entorno_aplica_las_fallas_al_arrancar(monkeypatch, datos):
+    core = Core(datos)
+    monkeypatch.setattr(servidor, "core", core)
+    monkeypatch.setenv("BANCO_FALLAS_TRANSITORIAS", "bloquear_tarjeta:1")
+    servidor.aplicar_configuracion_del_entorno()
+    from mcp_server.errores import ErrorCore
+
+    with pytest.raises(ErrorCore):
+        core.consumir_falla("bloquear_tarjeta")

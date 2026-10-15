@@ -118,9 +118,10 @@ def test_transaccion_ajena_o_inexistente(ops, verificado, id_transaccion):
     assert _error(e) == ("VALIDACION", "TRANSACCION_NO_ENCONTRADA", False)
 
 
-def test_disputa_sin_verificar_es_permisos(ops):
+@pytest.mark.parametrize("id_transaccion", ["TX-0001", "TX-9999"])
+def test_disputa_sin_verificar_es_permisos_sin_revelar_existencia(ops, id_transaccion):
     with pytest.raises(ErrorCore) as e:
-        ops.iniciar_disputa("CLI-001", "TX-0001", "x")
+        ops.iniciar_disputa("CLI-001", id_transaccion, "x")
     assert _error(e)[:2] == ("PERMISOS", "IDENTIDAD_NO_VERIFICADA")
 
 
@@ -202,8 +203,9 @@ def test_escalar_completa_el_resumen_con_datos_del_core(ops, core):
         id_transacciones=["TX-0002"],
         acciones_realizadas=["Identidad verificada", "Tarjeta bloqueada"],
     )
-    assert r["estado"] == "en_cola_analista"
-    resumen = r["resumen"]
+    # Al modelo solo vuelve el acuse; el resumen completo queda en el core para el analista.
+    assert r == {"id_caso": "CASO-0001", "estado": "en_cola_analista", "transacciones_incluidas": 1}
+    resumen = core.casos[-1]["resumen"]
     assert resumen["cliente"] == {"id_cliente": "CLI-001", "nombre": "Ana María Gómez"}
     assert resumen["transacciones"] == [
         {
@@ -215,16 +217,15 @@ def test_escalar_completa_el_resumen_con_datos_del_core(ops, core):
         }
     ]
     assert resumen["acciones_realizadas"] == ["Identidad verificada", "Tarjeta bloqueada"]
-    assert core.casos[-1]["id_caso"] == r["id_caso"]
 
 
-def test_escalar_a_pedido_no_exige_cliente_ni_verificacion(ops):
+def test_escalar_a_pedido_no_exige_cliente_ni_verificacion(ops, core):
     r = ops.escalar_a_analista(
         causa="CLIENTE_PIDE_PERSONA",
         descripcion="El cliente pidió hablar con una persona",
         accion_recomendada="Contactar al cliente",
     )
-    assert r["resumen"]["cliente"] is None
+    assert core.casos[-1]["resumen"]["cliente"] is None
     assert r["estado"] == "en_cola_analista"
 
 
@@ -246,8 +247,48 @@ def test_resumen_incompleto(ops, causa, descripcion, accion):
 
 def test_escalar_con_transaccion_o_cliente_desconocido(ops):
     with pytest.raises(ErrorCore) as e:
-        ops.escalar_a_analista("OTRO", "d", "a", id_transacciones=["TX-9999"])
+        ops.escalar_a_analista("OTRO", "d", "a", id_cliente="CLI-001", id_transacciones=["TX-9999"])
     assert e.value.codigo == "TRANSACCION_NO_ENCONTRADA"
     with pytest.raises(ErrorCore) as e:
         ops.escalar_a_analista("OTRO", "d", "a", id_cliente="CLI-999")
     assert e.value.codigo == "CLIENTE_NO_EXISTE"
+
+
+def test_escalar_transacciones_exige_cliente(ops):
+    with pytest.raises(ErrorCore) as e:
+        ops.escalar_a_analista("OTRO", "d", "a", id_transacciones=["TX-0001"])
+    assert _error(e) == ("VALIDACION", "RESUMEN_INCOMPLETO", False)
+
+
+def test_escalar_rechaza_transacciones_de_otro_cliente(ops):
+    with pytest.raises(ErrorCore) as e:
+        ops.escalar_a_analista("OTRO", "d", "a", id_cliente="CLI-001", id_transacciones=["TX-0006"])
+    assert e.value.codigo == "TRANSACCION_NO_ENCONTRADA"
+
+
+@pytest.mark.parametrize(
+    ("herramienta", "llamada", "despues"),
+    [
+        (
+            "consultar_transacciones",
+            lambda o: o.consultar_transacciones("CLI-001", "4821"),
+            "PERMISOS",
+        ),
+        ("iniciar_disputa", lambda o: o.iniciar_disputa("CLI-001", "TX-0001", "x"), "PERMISOS"),
+        ("bloquear_tarjeta", lambda o: o.bloquear_tarjeta("CLI-001", "4821", "x"), "PERMISOS"),
+        ("escalar_a_analista", lambda o: o.escalar_a_analista("OTRO", "d", "a"), None),
+    ],
+)
+def test_la_falla_transitoria_va_antes_que_cualquier_validacion(
+    ops, core, herramienta, llamada, despues
+):
+    core.programar_fallas(herramienta, 1)
+    with pytest.raises(ErrorCore) as e:
+        llamada(ops)
+    assert e.value.tipo == "TRANSITORIO"
+    if despues is None:
+        assert llamada(ops)["estado"] == "en_cola_analista"
+    else:
+        with pytest.raises(ErrorCore) as e:
+            llamada(ops)
+        assert e.value.tipo == despues
