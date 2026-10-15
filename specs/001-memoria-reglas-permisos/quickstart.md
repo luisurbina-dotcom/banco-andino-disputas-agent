@@ -50,7 +50,7 @@ Script estático: `bash scripts/verificar_ecosistema.sh` → 19 comprobaciones e
 
 | # | Resultado | Cómo se ejecutó |
 |---|---|---|
-| M1 | ⏳ Pendiente (manual) | Requiere `/memory` en una sesión interactiva |
+| M1 | ✅ `/memory` muestra `CLAUDE.md` y la constitución importada | Sesión interactiva del responsable |
 | M2 | ✅ Responde "$500.000 COP o menos se inician automáticamente" | Sesión nueva `claude -p` sin herramientas |
 | M3 | ✅ `git check-ignore` confirma ambos archivos ignorados | Script estático |
 | M4 | ✅ `tests.md` se carga al leer `src/agent/test_tmp.py`, no al inicio | Sesión nueva `claude -p` (autorreporte del modelo) |
@@ -59,9 +59,9 @@ Script estático: `bash scripts/verificar_ecosistema.sh` → 19 comprobaciones e
 | M7 | ✅ `Read .env` → "denied by your permission settings" | Sesión de implementación |
 | M8 | ✅ `cat .env` por Bash → denegado | Sesión de implementación |
 | M9 | ✅ `Write secrets/clave.txt` → denegado | Sesión de implementación |
-| M10 | ⏳ Pendiente (manual) | Requiere editar `settings.local.json`; no lo hace Claude |
+| M10 | ✅ Con `allow: Read(./.env)` en `settings.local.json`, la lectura sigue denegada | Sesión interactiva del responsable (archivos creados y borrados por él) |
 | M11 | ✅ `Read .env.example` → permitido (la negación funciona) | Sesión de implementación |
-| M12 | ⏳ Pendiente (manual) | Requiere `/permissions` en una sesión interactiva |
+| M12 | ✅ `/permissions` muestra las reglas deny del proyecto | Sesión interactiva del responsable |
 | M13 | ✅ `mcp-tools.md` se carga al leer `src/mcp_server/tmp.py` | Sesión nueva `claude -p` (autorreporte del modelo) |
 
 Hallazgos adicionales:
