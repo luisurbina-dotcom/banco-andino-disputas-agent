@@ -70,6 +70,7 @@ source = { editable = "." }
 dependencies = [
     { name = "claude-agent-sdk" },
     { name = "fastmcp" },
+    { name = "rich" },
 ]
 
 [package.dev-dependencies]
@@ -83,6 +84,7 @@ dev = [
 requires-dist = [
     { name = "claude-agent-sdk", specifier = ">=0.2,<0.3" },
     { name = "fastmcp", specifier = ">=4,<5" },
+    { name = "rich", specifier = ">=13" },
 ]
 
 [package.metadata.requires-dev]
