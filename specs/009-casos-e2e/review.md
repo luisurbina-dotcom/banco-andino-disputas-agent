@@ -20,3 +20,30 @@
 
 Verificado tras las correcciones: 397 unitarios, ruff limpio y una tercera ejecución e2e 6/6
 (4 min 01 s).
+
+## Re-revisión (`code-reviewer`, estado `a96a99b`)
+
+- **Veredicto**: APROBADO CON OBSERVACIONES (3 BAJA). Hallazgos 1–8 confirmados como resueltos;
+  `IDENTIDAD_BLOQUEADA` llega como evento `error` con `codigo` y las operaciones `ok` siempre
+  traen `id_cliente`; sin falsos rojos en los caminos legítimos revisados.
+
+| # | Sev. | Hallazgo | Resolución |
+|---|---|---|---|
+| R1 | BAJA | Un error en el primer turno omitía el caso aunque el agente ya hubiera ejecutado acciones (los casos de un turno podían quedar omitidos en lugar de fallar). | **Corregido**: solo se omite si el primer turno con error no tiene eventos; si hubo acciones, el caso falla. Test. |
+| R2 | BAJA | C5 y C6 operan sin comprobar la verificación previa ni el cliente verificado. | **Corregido**: `clientes_verificados` (CLI-001 / CLI-007) y `verificado_antes_de_operar` en ambos. |
+| R3 | BAJA | C3 no comprobaba la verificación antes de operar en el turno 2. | **Corregido**: `verificado_antes_de_operar` en C3. |
+
+Verificado: 398 unitarios; C3, C5 y C6 de nuevo en verde con las aserciones nuevas.
+
+## Revisión de cumplimiento (`/revisar-cumplimiento`)
+
+- **Estado revisado**: `a96a99b` (las correcciones posteriores solo agregan aserciones en `test_e2e.py`; no cambian el alcance auditado). **Veredicto**: **CUMPLE** (I.1–I.5, II, III, IV).
+- La rama no toca el agente, los hooks ni el servidor: los mecanismos de las reglas 1 y 2
+  (`pre_reglas` y `post_resultado`, monto leído del core) siguen intactos, y cada regla 1–5
+  tiene un caso que la comprueba con el modelo real.
+- Solo datos ficticios (`FIC-…`, últimos 4 dígitos, ids `CLI-`/`TX-`/`CASO-`); ninguna
+  credencial (`ANTHROPIC_API_KEY` solo se nombra en la documentación).
+- Spec primero: `613c011` (spec) → `5ba9afe` (plan y tareas) → `18cb1d5`/`a96a99b` (código).
+- Observaciones: excepción de nombre `test_e2e.py` justificada en `plan.md`; el cambio de
+  `CLAUDE.md` requiere revisión humana; la negación determinista de las reglas 1 y 2 sigue en
+  `test_garantias.py`.

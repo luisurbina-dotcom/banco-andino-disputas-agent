@@ -27,7 +27,7 @@
 - [X] T011 Test unitario de FR-008: la fixture omite el caso si el agente no arranca
 - [X] T012 Ejecución completa Q2 y repetición Q3; registrar resultados y tiempos en
   `quickstart.md`. Si un caso revela un defecto del agente, corregirlo con su test unitario
-- [ ] T013 Cerrar el ticket con `/abrir-pr 9`
+- [X] T013 Cerrar el ticket con `/abrir-pr 9`
 
 ## Dependencias
 

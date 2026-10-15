@@ -61,6 +61,8 @@ Datos ficticios del core (`data/`). "Operaciones sobre productos" = `consultar_t
 
 ## Común a todos los casos
 
-- Un turno con error del SDK no cuenta como resultado de negocio: en el primer turno el caso se
-  omite (agente no disponible); en uno posterior, el caso falla con ese error.
+- Un turno con error del SDK no cuenta como resultado de negocio: si es el primero y no hubo
+  acciones, el caso se omite (agente no disponible); en otro caso, falla con ese error.
+- En los casos con identidad (C1, C3, C5, C6): se verifica al cliente esperado y ninguna
+  operación ocurre antes de su verificación.
 - Cada turno debe terminar con una razón de parada del modelo.

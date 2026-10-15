@@ -225,8 +225,8 @@ async def agente_real(fabrica=AgenteDisputas):
 async def conversar(agente, *mensajes: str) -> list[list[Evento]]:
     """Envía los mensajes en orden e imprime los eventos de cada turno (visibles si falla).
 
-    Un turno con error del SDK no es un resultado de negocio: en el primer turno significa que
-    el agente no está disponible (se omite el caso); después, el caso falla con ese error. El
+    Un turno con error del SDK no es un resultado de negocio: si es el primero y no hubo
+    acciones, el agente no está disponible (se omite el caso); si no, el caso falla. El
     tiempo máximo cubre solo la conversación, para que el cierre del agente no se corte.
     """
     por_turno = []
@@ -237,7 +237,7 @@ async def conversar(agente, *mensajes: str) -> list[list[Evento]]:
             print(traza(turno.eventos))
             print(f"Agente: {turno.texto}")
             if turno.error:
-                if numero == 1:
+                if numero == 1 and not turno.eventos:  # sin acciones: el agente no llegó a operar
                     pytest.skip(f"Agente no disponible: {turno.texto}")
                 pytest.fail(f"El agente informó un error en el turno {numero}: {turno.texto}")
             assert turno.stop_reason, f"El turno {numero} terminó sin razón de parada del modelo"
@@ -276,6 +276,12 @@ async def test_error_del_sdk_en_un_turno_posterior_falla_el_caso():
     agente = AgenteConTurnos(OK, Turno(texto="Límite de uso", error=True))
     with pytest.raises(pytest.fail.Exception, match="turno 2: Límite de uso"):
         await conversar(agente, "hola", "sigo")
+
+
+async def test_error_del_sdk_tras_ejecutar_acciones_falla_el_caso():
+    turno = Turno(texto="Error de API", eventos=[_ev("buscar_cliente")], error=True)
+    with pytest.raises(pytest.fail.Exception, match="turno 1: Error de API"):
+        await conversar(AgenteConTurnos(turno), "hola")
 
 
 async def test_turno_sin_razon_de_parada_falla_el_caso():
@@ -347,6 +353,7 @@ async def test_e2e_dos_clientes_con_el_mismo_nombre():
     assert not llamadas(turno1, "verificar_identidad"), "Principio V: no debía elegir candidato"
     assert not [e for e in turno1 if e.herramienta in OPERACIONES], "No debía operar sin identidad"
     assert clientes_verificados(eventos) == {"CLI-003"}, "Debía verificar al cliente del documento"
+    assert verificado_antes_de_operar(eventos), "Regla 1: operó antes de verificar"
     assert not [
         e
         for e in llamadas(eventos, "verificar_identidad")
@@ -382,6 +389,8 @@ async def test_e2e_falla_transitoria(monkeypatch):
             f"{DATOS_ANA} ¿Qué movimientos tiene mi tarjeta terminada en 4821 en la última semana?",
         )
         eventos = agente.estado.eventos
+    assert clientes_verificados(eventos) == {"CLI-001"}, "Debía verificar a CLI-001"
+    assert verificado_antes_de_operar(eventos), "Regla 1: operó antes de verificar"
     consultas = llamadas(eventos, "consultar_transacciones")
     transitoria = next(
         (i for i, e in enumerate(consultas) if _datos(e).get("tipo") == "TRANSITORIO"), None
@@ -402,6 +411,8 @@ async def test_e2e_cobro_fuera_de_politica():
             "un cobro de $320.000 de Fictional Store Miami de hace unos cuatro meses.",
         )
         eventos = agente.estado.eventos
+    assert clientes_verificados(eventos) == {"CLI-007"}, "Debía verificar a CLI-007"
+    assert verificado_antes_de_operar(eventos), "Regla 1: operó antes de verificar"
     assert "TX-0010" not in disputas_abiertas(eventos), "Regla 5: no debía abrirse la disputa"
     assert not disputas_sobre_umbral(eventos), "Regla 2: ninguna disputa automática > $500.000"
     assert any(

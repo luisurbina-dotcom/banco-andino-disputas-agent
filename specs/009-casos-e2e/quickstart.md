@@ -21,7 +21,7 @@ uv run pytest -q                              # unitarios: no corren los e2e
 
 | # | Resultado |
 |---|---|
-| Q1 | ✅ `uv run pytest -q`: 397 en verde tras la revisión (11 tests de las verificaciones, la omisión y el manejo de errores del SDK), 6 e2e deseleccionados |
+| Q1 | ✅ `uv run pytest -q`: 398 en verde tras la revisión (11 tests de las verificaciones, la omisión y el manejo de errores del SDK), 6 e2e deseleccionados |
 | Q2 | ✅ 6/6 en 2 min 40 s (C1 68 s, C6 32 s, C5 17 s, C3 17 s, C2 13 s, C4 9 s) |
 | Q3 | ✅ 6/6 en 3 min 01 s; tras endurecer las verificaciones por la revisión, una tercera ejecución 6/6 en 4 min 01 s |
 | Q4 | ✅ Con `BANCO_FALLAS_TRANSITORIAS=escalar_a_analista:5`, C2 falla con "Regla 4: debía escalar con causa CLIENTE_PIDE_PERSONA" y la salida capturada muestra los dos intentos `[error] escalar_a_analista` |
