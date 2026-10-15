@@ -130,3 +130,14 @@ def test_hook_del_plugin_falla_cerrado_con_entrada_invalida():
         cwd="/",
     )
     assert r.returncode == 2
+
+
+def test_cada_comando_inyectado_esta_autorizado_en_allowed_tools():
+    # Si un comando y su autorización divergen, la inyección se deniega y el auditor recibe un
+    # diff vacío sin que nada falle.
+    skill = (PLUGIN / "skills" / "revisar-cumplimiento" / "SKILL.md").read_text(encoding="utf-8")
+    (permitidas,) = [linea for linea in skill.splitlines() if linea.startswith("allowed-tools:")]
+    comandos = [linea[2:-1] for linea in skill.splitlines() if linea.startswith("!`")]
+    assert len(comandos) == 2
+    for comando in comandos:
+        assert f"Bash({comando})" in permitidas, comando

@@ -30,7 +30,7 @@ components, loading, cli-reference, sub-agents, skills, hooks), consultada el 20
   se puede reutilizar el hook `solo_lectura_git` del agente de este repo.
 - **Decision**: el agente del plugin tiene `tools: Read, Grep, Glob` (sin Bash ni herramientas de
   escritura): es de solo lectura **por construcción**. El diff lo aporta la skill con inyección de
-  contexto (`` !`git …` ``) restringida por `allowed-tools: Bash(git diff:*)` y similares.
+  contexto (`` !`git …` ``) autorizada en `allowed-tools` con los dos comandos exactos que se inyectan.
 - **Alternatives considered**: permitir Bash con reglas de permisos de sesión (afecta a toda la
   sesión del otro equipo); hook de plugin sobre Bash (no es específico del agente).
 
@@ -63,8 +63,8 @@ components, loading, cli-reference, sub-agents, skills, hooks), consultada el 20
   y siempre las reglas del banco (bloque compartido).
 - **Rama base**: `main`, documentada como limitación. Los argumentos de la skill se sustituyen
   como texto antes de ejecutar la inyección de contexto, así que un segundo argumento opcional
-  no puede tener `main` por defecto sin comandos compuestos que `allowed-tools: Bash(git diff:*)`
-  no autoriza.
+  no puede tener `main` por defecto sin comandos compuestos que `allowed-tools` (comandos
+  exactos) no autoriza.
 
 ## R7. Prueba de instalación aislada
 

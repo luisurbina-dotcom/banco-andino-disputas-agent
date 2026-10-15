@@ -51,7 +51,8 @@ Con `--scope project`, la declaración queda en `.claude/settings.json` y la com
 
 - La skill compara la rama actual con `main`: los cambios sin commit no se auditan y, si el
   repositorio no tiene una rama `main`, la skill no puede obtener el diff.
-- Los lockfiles se excluyen del diff. Si el diff es muy grande, el auditor lee los archivos
+- Los lockfiles (`*.lock`, `package-lock.json`, `pnpm-lock.yaml`, en cualquier carpeta) se
+  excluyen del diff. Si el diff es muy grande, el auditor lee los archivos
   listados en el resumen y lo indica en el informe.
 - El auditor puede leer cualquier archivo del proyecto. Un plugin no puede declarar reglas de
   permisos: agrega en tu `.claude/settings.json` reglas `permissions.deny` para los archivos de
