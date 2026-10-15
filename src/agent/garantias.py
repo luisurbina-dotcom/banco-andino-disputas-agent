@@ -200,7 +200,11 @@ def pre_delegacion(estado: EstadoSesion):
     async def hook(entrada: dict, tool_use_id, contexto) -> dict:
         try:
             argumentos = entrada.get("tool_input") or {}
-            permitido = argumentos.get("subagent_type") == SUBAGENTE_ANALISTA
+            # Solo el agente principal delega, y solo en el analista (sin delegación anidada).
+            permitido = (
+                _agente(entrada) == "principal"
+                and argumentos.get("subagent_type") == SUBAGENTE_ANALISTA
+            )
         except Exception:  # fail-closed
             argumentos, permitido = {}, False
         agente = _agente(entrada)
@@ -217,7 +221,7 @@ def pre_delegacion(estado: EstadoSesion):
     return hook
 
 
-def pre_herramientas_permitidas(permitidas: set[str]):
+def pre_herramientas_permitidas(estado: EstadoSesion, permitidas: set[str]):
     """PreToolUse sin matcher: niega cualquier herramienta fuera de la lista permitida, la llame
     el agente principal o un subagente (defensa si cambia la configuración de herramientas)."""
 
@@ -226,6 +230,18 @@ def pre_herramientas_permitidas(permitidas: set[str]):
             permitido = entrada.get("tool_name") in permitidas
         except Exception:  # fail-closed
             permitido = False
-        return {} if permitido else _negar(MOTIVO_HERRAMIENTA_AJENA)
+        if permitido:
+            return {}
+        argumentos = entrada.get("tool_input") if isinstance(entrada, dict) else None
+        estado.eventos.append(
+            Evento(
+                _nombre(entrada) or "desconocida",
+                argumentos if isinstance(argumentos, dict) else {},
+                "negado",
+                MOTIVO_HERRAMIENTA_AJENA,
+                _agente(entrada),
+            )
+        )
+        return _negar(MOTIVO_HERRAMIENTA_AJENA)
 
     return hook

@@ -20,7 +20,8 @@
 {"id_caso": "CASO-0001", "estado": "en_cola_analista",
  "resumen": {"causa": "MONTO_SUPERA_UMBRAL",
              "cliente": {"id_cliente": "CLI-001", "nombre": "…"} | null,
-             "transacciones": [{"id_transaccion", "fecha", "monto", "comercio", "pais"}],
+             "transacciones": [{"id_transaccion", "fecha", "antiguedad_dias", "monto",
+                                "comercio", "pais"}],
              "acciones_realizadas": ["…"], "descripcion": "…", "accion_recomendada": "…"}}
 ```
 

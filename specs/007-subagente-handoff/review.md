@@ -27,3 +27,19 @@
   `antiguedad_dias` del core.
 - II: dos hooks nuevos (`pre_delegacion`, `pre_herramientas_permitidas`), fail-closed,
   justificados en research R3 y en esta revisión.
+
+## Re-revisión del commit de correcciones (`code-reviewer`)
+
+- **Alcance**: `c700ed9`. **Veredicto**: APROBADO CON OBSERVACIONES; los 8 hallazgos corregidos,
+  sin regresiones; la guardia no niega nada del flujo normal.
+
+| # | Sev. | Hallazgo | Resolución |
+|---|---|---|---|
+| 9 | BAJA | La guardia de herramientas negaba sin registrar evento. | **Corregido**: registra `negado` con herramienta y agente; test. |
+| 10 | BAJA | El test no ejercitaba la guardia real sobre el flujo normal. | **Corregido**: la guardia de `construir_opciones` deja pasar las 6 herramientas, `Agent` y `Task`. |
+| 11 | BAJA | data-model 005 § Caso sin `antiguedad_dias`. | **Corregido**. |
+| 12 | BAJA | Un subagente con delegación podría delegar de nuevo. | **Corregido**: solo el agente principal delega; test. |
+
+## Compuerta de `/abrir-pr`
+
+Sin hallazgos ALTA pendientes y cumplimiento **CUMPLE** → se abre el PR.

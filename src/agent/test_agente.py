@@ -156,3 +156,10 @@ async def test_el_directorio_temporal_se_limpia_al_salir(estado):
         cwd = agente._cliente.options.cwd
         assert os.path.isdir(cwd)
     assert not os.path.exists(cwd)
+
+
+async def test_la_guardia_real_deja_pasar_el_flujo_normal(estado):
+    opciones = construir_opciones(estado)
+    (guardia,) = [m for m in opciones.hooks["PreToolUse"] if m.matcher is None]
+    for herramienta in [*HERRAMIENTAS, "Agent", "Task"]:
+        assert await guardia.hooks[0]({"tool_name": herramienta}, "t", None) == {}

@@ -353,12 +353,19 @@ async def test_cualquier_subagente_solo_puede_consultar(estado):
 
 
 @pytest.mark.parametrize("herramienta", ["Bash", "Read", "WebFetch", "mcp__otro__x", None])
-async def test_herramientas_fuera_de_la_lista_se_niegan(herramienta):
-    hook = pre_herramientas_permitidas({"mcp__banco__buscar_cliente", "Agent"})
+async def test_herramientas_fuera_de_la_lista_se_niegan_y_registran(estado, herramienta):
+    hook = pre_herramientas_permitidas(estado, {"mcp__banco__buscar_cliente", "Agent"})
     salida = await hook({"tool_name": herramienta, "tool_input": {}}, "t", None)
     assert _decision(salida) == ("deny", MOTIVO_HERRAMIENTA_AJENA)
+    assert estado.eventos[-1].resultado == "negado"
 
 
-async def test_herramientas_permitidas_pasan():
-    hook = pre_herramientas_permitidas({"mcp__banco__buscar_cliente", "Agent"})
+async def test_herramientas_permitidas_pasan(estado):
+    hook = pre_herramientas_permitidas(estado, {"mcp__banco__buscar_cliente", "Agent"})
     assert _decision(await hook({"tool_name": "Agent"}, "t", None)) == (None, None)
+
+
+async def test_un_subagente_no_puede_delegar(estado):
+    entrada = {**_entrada_agente("analista-transacciones"), "agent_type": "analista-transacciones"}
+    salida = await pre_delegacion(estado)(entrada, "t", None)
+    assert _decision(salida) == ("deny", MOTIVO_DELEGACION)

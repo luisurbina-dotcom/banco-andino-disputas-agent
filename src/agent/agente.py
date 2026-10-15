@@ -91,7 +91,7 @@ def construir_opciones(
             "PreToolUse": [
                 HookMatcher(
                     matcher=None,
-                    hooks=[pre_herramientas_permitidas({*HERRAMIENTAS, "Agent", "Task"})],
+                    hooks=[pre_herramientas_permitidas(estado, {*HERRAMIENTAS, "Agent", "Task"})],
                 ),
                 HookMatcher(matcher=MATCHER_BANCO, hooks=[pre_reglas(estado)]),
                 HookMatcher(matcher="Agent|Task", hooks=[pre_delegacion(estado)]),

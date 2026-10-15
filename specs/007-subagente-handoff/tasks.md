@@ -44,7 +44,7 @@ description: "Tareas de implementación: subagente de análisis, varios asuntos 
 
 - [X] T012 Ejecutar `uv run pytest -q`, `uv run ruff check .`, `uv run ruff format --check .` y `bash scripts/verificar_ecosistema.sh`
 - [X] T013 Verificación en vivo E1–E4 de `quickstart.md`; registrar resultados
-- [ ] T014 Cerrar el ticket con `/abrir-pr 7`
+- [X] T014 Cerrar el ticket con `/abrir-pr 7`
 
 ## Dependencies
 
