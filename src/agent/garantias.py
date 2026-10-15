@@ -32,6 +32,9 @@ MOTIVO_TX_DESCONOCIDA = (
     "La transacción no existe en el core; consulta las transacciones del cliente antes de disputar."
 )
 MOTIVO_FALLO = "Garantía no disponible; la operación se niega por seguridad."
+MOTIVO_PRODUCTO_AJENO = (
+    "Regla 1: la tarjeta o la transacción no pertenece al cliente verificado en esta conversación."
+)
 
 
 @dataclass
@@ -45,6 +48,7 @@ class Evento:
 @dataclass
 class EstadoSesion:
     transacciones: dict[str, dict]
+    tarjetas: dict[str, dict] = field(default_factory=dict)  # id_tarjeta -> tarjeta del core
     verificado: str | None = None
     eventos: list[Evento] = field(default_factory=list)
 
@@ -52,7 +56,10 @@ class EstadoSesion:
     def desde_core(cls, fecha_base: date | None = None) -> "EstadoSesion":
         """Lee los datos del core en solo lectura, con la misma fecha base que el servidor."""
         datos = cargar(fecha_base=fecha_base)
-        return cls(transacciones={tx["id_transaccion"]: tx for tx in datos.transacciones})
+        return cls(
+            transacciones={tx["id_transaccion"]: tx for tx in datos.transacciones},
+            tarjetas={t["id_tarjeta"]: t for t in datos.tarjetas},
+        )
 
 
 def _nombre(entrada: dict) -> str:
@@ -94,23 +101,36 @@ def _motivo_de_negacion(estado: EstadoSesion, nombre: str, argumentos: dict) -> 
         return None
     if estado.verificado is None or argumentos.get("id_cliente") != estado.verificado:
         return MOTIVO_REGLA_1
+    # La pertenencia del producto se decide con los datos del core, no con el argumento.
     if nombre == "iniciar_disputa":
         transaccion = estado.transacciones.get(argumentos.get("id_transaccion"))
         if transaccion is None:
             return MOTIVO_TX_DESCONOCIDA
-        if int(transaccion["monto"]) > UMBRAL_DISPUTA:  # monto del core, nunca del modelo
+        tarjeta = estado.tarjetas.get(transaccion["id_tarjeta"])
+        if tarjeta is None or tarjeta["id_cliente"] != estado.verificado:
+            return MOTIVO_PRODUCTO_AJENO
+        monto = transaccion["monto"]
+        if not isinstance(monto, int) or isinstance(monto, bool):
+            raise TypeError("monto no entero en el core")
+        if monto > UMBRAL_DISPUTA:  # monto del core, nunca del modelo
             return MOTIVO_REGLA_2
+        return None
+    propias = {
+        t["ultimos4"] for t in estado.tarjetas.values() if t["id_cliente"] == estado.verificado
+    }
+    if argumentos.get("ultimos4") not in propias:
+        return MOTIVO_PRODUCTO_AJENO
     return None
 
 
 def pre_reglas(estado: EstadoSesion):
     async def hook(entrada: dict, tool_use_id, contexto) -> dict:
-        nombre = _nombre(entrada)
-        argumentos = entrada.get("tool_input") or {}
         try:
+            nombre = _nombre(entrada)
+            argumentos = entrada.get("tool_input") or {}
             motivo = _motivo_de_negacion(estado, nombre, argumentos)
         except Exception:  # fail-closed: un error interno nunca abre el paso
-            motivo = MOTIVO_FALLO
+            nombre, argumentos, motivo = "desconocida", {}, MOTIVO_FALLO
         if motivo is None:
             return {}
         estado.eventos.append(Evento(nombre, argumentos, "negado", motivo))
@@ -125,13 +145,23 @@ def post_resultado(estado: EstadoSesion):
         argumentos = entrada.get("tool_input") or {}
         try:
             if entrada.get("hook_event_name") == "PostToolUseFailure":
-                error = (_interpretar(entrada.get("error")) or {}).get("error") or {}
+                datos = _interpretar(entrada.get("error"))
+            else:
+                datos = _interpretar(entrada.get("tool_response"))
+            if entrada.get("hook_event_name") == "PostToolUseFailure" or (
+                isinstance(datos, dict) and "error" in datos
+            ):
+                error = (datos or {}).get("error")
+                error = error if isinstance(error, dict) else {}
                 detalle = {"tipo": error.get("tipo"), "codigo": error.get("codigo")}
                 estado.eventos.append(Evento(nombre, argumentos, "error", detalle))
-                if detalle["codigo"] == "IDENTIDAD_BLOQUEADA":
+                # Fail-closed: un bloqueo, o un error ilegible de verificar_identidad, retira
+                # la verificación (no se confía en interpretar bien el formato del error).
+                if detalle["codigo"] == "IDENTIDAD_BLOQUEADA" or (
+                    nombre == "verificar_identidad" and detalle["codigo"] is None
+                ):
                     estado.verificado = None
                 return {}
-            datos = _interpretar(entrada.get("tool_response"))
             estado.eventos.append(Evento(nombre, argumentos, "ok", datos))
             if (
                 nombre == "verificar_identidad"

@@ -51,10 +51,14 @@ class Turno:
     eventos: list[Evento] = field(default_factory=list)
     stop_reason: str | None = None
     num_turns: int = 0
+    error: bool = False  # el SDK informó un error en el turno (p. ej. autenticación)
 
 
 def construir_opciones(
-    estado: EstadoSesion, modelo: str | None = None, prompt_sistema: str | None = None
+    estado: EstadoSesion,
+    modelo: str | None = None,
+    prompt_sistema: str | None = None,
+    cwd: str | None = None,
 ) -> ClaudeAgentOptions:
     """`prompt_sistema` solo se reemplaza en pruebas (p. ej. un modelo que intenta saltarse las
     reglas): las garantías no dependen del prompt."""
@@ -71,7 +75,7 @@ def construir_opciones(
         allowed_tools=list(HERRAMIENTAS),
         tools=[],  # sin herramientas integradas (archivos, shell): solo las del banco
         setting_sources=[],  # no hereda CLAUDE.md, reglas ni hooks de desarrollo del repo
-        cwd=tempfile.mkdtemp(prefix="agente-banco-"),
+        cwd=cwd or tempfile.gettempdir(),
         model=modelo or os.environ.get("BANCO_MODELO") or None,
         hooks={
             "PreToolUse": [HookMatcher(matcher=MATCHER_BANCO, hooks=[pre_reglas(estado)])],
@@ -92,16 +96,24 @@ class AgenteDisputas:
         self.estado = estado or EstadoSesion.desde_core()
         self._modelo = modelo
         self._prompt = prompt_sistema
+        self._directorio = None
         self._fabrica = fabrica_cliente
         self._cliente = None
 
     async def __aenter__(self) -> "AgenteDisputas":
+        # El servidor corre en un directorio temporal: los datos se resuelven con ruta absoluta.
+        if os.environ.get("BANCO_DATOS_DIR"):
+            os.environ["BANCO_DATOS_DIR"] = os.path.abspath(os.environ["BANCO_DATOS_DIR"])
+        self._directorio = tempfile.TemporaryDirectory(prefix="agente-banco-")
         self._cliente = self._fabrica(
-            options=construir_opciones(self.estado, self._modelo, self._prompt)
+            options=construir_opciones(
+                self.estado, self._modelo, self._prompt, cwd=self._directorio.name
+            )
         )
         try:
             await self._cliente.connect()
         except (CLINotFoundError, CLIConnectionError, ProcessError) as error:
+            await self.__aexit__(None, None, None)
             raise AgenteNoDisponible(
                 "No se pudo iniciar el agente: instala Claude Code y autentícate (o define "
                 f"ANTHROPIC_API_KEY en tu entorno). Detalle: {type(error).__name__}"
@@ -111,6 +123,9 @@ class AgenteDisputas:
     async def __aexit__(self, *exc) -> None:
         if self._cliente is not None and hasattr(self._cliente, "disconnect"):
             await self._cliente.disconnect()
+        if self._directorio is not None:
+            self._directorio.cleanup()
+            self._directorio = None
 
     async def responder(self, texto: str) -> Turno:
         inicio = len(self.estado.eventos)
@@ -125,6 +140,7 @@ class AgenteDisputas:
                 turno.texto = mensaje.result or ultimo_texto
                 turno.stop_reason = mensaje.stop_reason
                 turno.num_turns = mensaje.num_turns
+                turno.error = bool(mensaje.is_error)
         turno.texto = turno.texto or ultimo_texto
         turno.eventos = self.estado.eventos[inicio:]
         return turno

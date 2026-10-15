@@ -35,3 +35,8 @@ def test_respuesta_unificada():
 
 def test_no_contiene_datos_con_forma_real():
     assert not re.search(r"\d{8,}", PROMPT_SISTEMA)
+
+
+def test_regla5_general_y_fraude_sin_verificar():
+    assert "si la política no cubre el caso" in PROMPT_SISTEMA.lower()
+    assert "verifica primero" in PROMPT_SISTEMA

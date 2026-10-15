@@ -102,3 +102,50 @@ def test_el_prompt_se_puede_reemplazar_sin_tocar_las_garantias(estado):
     opciones = construir_opciones(estado, prompt_sistema="Modelo de prueba desobediente")
     assert opciones.system_prompt == "Modelo de prueba desobediente"
     assert len(opciones.hooks["PreToolUse"][0].hooks) == 1
+
+
+async def test_turno_con_error_del_modelo_lo_expone(estado):
+    agente = AgenteDisputas(estado=estado)
+    resultado = _resultado("Credenciales inválidas")
+    resultado.is_error = True
+    agente._cliente = ClienteFalso(estado, [resultado])
+    turno = await agente.responder("hola")
+    assert turno.error is True
+
+
+async def test_si_connect_falla_se_desconecta(estado):
+    desconexiones = []
+
+    class Falla:
+        def __init__(self, options):
+            pass
+
+        async def connect(self):
+            raise CLINotFoundError("no está")
+
+        async def disconnect(self):
+            desconexiones.append(True)
+
+    with pytest.raises(AgenteNoDisponible):
+        async with AgenteDisputas(estado=estado, fabrica_cliente=Falla):
+            pass
+    assert desconexiones == [True]
+
+
+async def test_el_directorio_temporal_se_limpia_al_salir(estado):
+    import os
+
+    class Ok:
+        def __init__(self, options):
+            self.options = options
+
+        async def connect(self):
+            pass
+
+        async def disconnect(self):
+            pass
+
+    async with AgenteDisputas(estado=estado, fabrica_cliente=Ok) as agente:
+        cwd = agente._cliente.options.cwd
+        assert os.path.isdir(cwd)
+    assert not os.path.exists(cwd)

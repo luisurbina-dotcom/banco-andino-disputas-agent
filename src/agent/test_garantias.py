@@ -5,6 +5,7 @@ import pytest
 
 from agent.garantias import (
     MOTIVO_FALLO,
+    MOTIVO_PRODUCTO_AJENO,
     MOTIVO_REGLA_1,
     MOTIVO_REGLA_2,
     MOTIVO_TX_DESCONOCIDA,
@@ -187,4 +188,52 @@ async def test_regla2_transaccion_desconocida_se_niega(estado):
 async def test_fallo_interno_niega_por_seguridad(estado):
     await _verificar(estado)
     estado.transacciones["TX-0001"] = {"monto": "no-es-un-numero"}
+    assert await _disputar(estado, "TX-0001") == ("deny", MOTIVO_FALLO)
+
+
+# --- Hallazgos de la revisión independiente (review.md) ---
+
+
+@pytest.mark.parametrize(
+    "error", ["Error: algo salió mal", "<tool_use_error>x</tool_use_error>", None]
+)
+async def test_falla_ilegible_de_verificar_retira_la_verificacion(estado, error):
+    await _verificar(estado)
+    entrada = entrada_falla("verificar_identidad", {"id_cliente": "CLI-001"}, "X", "Y")
+    entrada["error"] = error
+    await post_resultado(estado)(entrada, "t", None)
+    assert estado.verificado is None
+
+
+async def test_error_que_llega_por_post_tool_use_se_trata_como_error(estado):
+    await _verificar(estado)
+    error = {"error": {"tipo": "NEGOCIO", "codigo": "IDENTIDAD_BLOQUEADA", "reintentable": False}}
+    args = {"id_cliente": "CLI-001", "fecha_nacimiento": "1900-01-01"}
+    await post_resultado(estado)(entrada_post("verificar_identidad", args, error), "t", None)
+    assert estado.verificado is None
+    assert estado.eventos[-1].resultado == "error"
+
+
+async def test_regla1_disputa_de_transaccion_de_otro_cliente_se_niega(estado):
+    await _verificar(estado)
+    # TX-0006 es de una tarjeta de CLI-004, aunque el id_cliente diga CLI-001.
+    assert await _disputar(estado, "TX-0006") == ("deny", MOTIVO_PRODUCTO_AJENO)
+
+
+@pytest.mark.parametrize("nombre", ["consultar_transacciones", "bloquear_tarjeta"])
+async def test_regla1_tarjeta_de_otro_cliente_se_niega(estado, nombre):
+    await _verificar(estado)
+    args = {"id_cliente": "CLI-001", "ultimos4": "7310", "motivo": "x"}
+    salida = await pre_reglas(estado)(entrada_pre(nombre, args), "t", None)
+    assert _decision(salida) == ("deny", MOTIVO_PRODUCTO_AJENO)
+
+
+async def test_entrada_que_no_es_dict_niega_por_seguridad(estado):
+    salida = await pre_reglas(estado)(None, "t", None)
+    assert _decision(salida) == ("deny", MOTIVO_FALLO)
+
+
+async def test_monto_no_entero_niega_por_seguridad(estado):
+    await _verificar(estado)
+    estado.transacciones["TX-0001"] = {**estado.transacciones["TX-0001"], "monto": 500000.9}
     assert await _disputar(estado, "TX-0001") == ("deny", MOTIVO_FALLO)
