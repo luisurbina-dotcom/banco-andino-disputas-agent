@@ -101,5 +101,18 @@ else
   ok "claude no disponible: se omite claude plugin validate"
 fi
 
+echo "011 · Entregables"
+check "README.md existe" test -f README.md
+check "README enlaza el GitHub Project" grep -qF "github.com/users/luisurbina-dotcom/projects/1" README.md
+check "README tiene la sección del video de funcionamiento" grep -qF "Video de funcionamiento" README.md
+if grep -qi "pendiente; el autor" README.md; then
+  printf '  AVISO  %s\n' "README: falta el enlace al video de funcionamiento (acción del autor)"
+fi
+check "DECISIONES.md existe" test -f DECISIONES.md
+check "DECISIONES.md cubre las 11 necesidades" python3 -c 'import re,sys; t=open("DECISIONES.md").read(); sys.exit(sorted(set(int(n) for n in re.findall(r"^\| (\d+) \|", t, re.M))) != list(range(1,12)))'
+palabras=$(wc -w < DECISIONES.md 2>/dev/null || echo 9999)
+check "DECISIONES.md cabe en dos páginas ($palabras palabras ≤ 1000)" test "$palabras" -le 1000
+check "guiones de demo de los seis casos" bash -c 'test "$(ls demo/c[1-6]_*.txt 2>/dev/null | wc -l)" -eq 6'
+
 echo
 if [ "$errores" -eq 0 ]; then echo "Todo OK"; else echo "$errores comprobación(es) fallaron"; exit 1; fi
