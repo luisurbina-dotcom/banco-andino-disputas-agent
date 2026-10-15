@@ -43,3 +43,29 @@ Al terminar, borrar `.env`, `secrets/`, `src/agent/test_tmp.py`, `src/mcp_server
 ## Fuera de alcance de esta verificación
 
 - Leer `.env` desde un script arbitrario (Python, Node): se cubre con hook en el issue #2.
+
+## Resultados de la verificación (2026-10-15)
+
+Script estático: `bash scripts/verificar_ecosistema.sh` → 19 comprobaciones en OK, código 0.
+
+| # | Resultado | Cómo se ejecutó |
+|---|---|---|
+| M1 | ⏳ Pendiente (manual) | Requiere `/memory` en una sesión interactiva |
+| M2 | ✅ Responde "$500.000 COP o menos se inician automáticamente" | Sesión nueva `claude -p` sin herramientas |
+| M3 | ✅ `git check-ignore` confirma ambos archivos ignorados | Script estático |
+| M4 | ✅ `tests.md` se carga al leer `src/agent/test_tmp.py`, no al inicio | Sesión nueva `claude -p` (autorreporte del modelo) |
+| M5 | ✅ Tras leer un archivo fuera de las rutas, ninguna regla cargada | Sesión nueva `claude -p` (autorreporte del modelo) |
+| M6 | ✅ Responde "PostToolUse sobre verificar_identidad" tras leer un archivo de `src/agent/` | Sesión nueva `claude -p` |
+| M7 | ✅ `Read .env` → "denied by your permission settings" | Sesión de implementación |
+| M8 | ✅ `cat .env` por Bash → denegado | Sesión de implementación |
+| M9 | ✅ `Write secrets/clave.txt` → denegado | Sesión de implementación |
+| M10 | ⏳ Pendiente (manual) | Requiere editar `settings.local.json`; no lo hace Claude |
+| M11 | ✅ `Read .env.example` → permitido (la negación funciona) | Sesión de implementación |
+| M12 | ⏳ Pendiente (manual) | Requiere `/permissions` en una sesión interactiva |
+| M13 | ✅ `mcp-tools.md` se carga al leer `src/mcp_server/tmp.py` | Sesión nueva `claude -p` (autorreporte del modelo) |
+
+Hallazgos adicionales:
+
+- `Read` de un `.env.local` anidado (`src/sub/.env.local`) también es denegado (caso borde).
+- `Write .env.example` es denegado para Claude: `Read(!.env.example)` solo exceptúa la lectura.
+  Decisión: se mantiene así (la plantilla la crea o edita una persona); ver tarea T009.

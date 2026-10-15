@@ -29,8 +29,8 @@ una de forma independiente.
 
 **Purpose**: estructura mínima que usan todas las historias.
 
-- [ ] T001 Crear las carpetas `scripts/`, `src/agent/` y `.claude/rules/` en la raíz del repositorio
-- [ ] T002 Crear `scripts/verificar_ecosistema.sh` (bash, `set -euo pipefail`, ejecutable) con funciones `ok`/`falla` que acumulan errores y terminan con código 1 si hubo alguno; sin comprobaciones todavía
+- [X] T001 Crear las carpetas `scripts/`, `src/agent/` y `.claude/rules/` en la raíz del repositorio
+- [X] T002 Crear `scripts/verificar_ecosistema.sh` (bash, `set -euo pipefail`, ejecutable) con funciones `ok`/`falla` que acumulan errores y terminan con código 1 si hubo alguno; sin comprobaciones todavía
 
 ---
 
@@ -38,7 +38,7 @@ una de forma independiente.
 
 **Purpose**: prerrequisitos compartidos.
 
-- [ ] T003 Verificar que `.gitignore` incluya `.env`, `.env.*`, `!.env.example`, `secrets/`, `CLAUDE.local.md` y `.claude/settings.local.json` (contrato § `.gitignore`); completar lo que falte en `.gitignore`
+- [X] T003 Verificar que `.gitignore` incluya `.env`, `.env.*`, `!.env.example`, `secrets/`, `CLAUDE.local.md` y `.claude/settings.local.json` (contrato § `.gitignore`); completar lo que falte en `.gitignore`
 
 **Checkpoint**: estructura y exclusiones listas; las historias pueden empezar.
 
@@ -50,8 +50,8 @@ una de forma independiente.
 
 **Independent Test**: quickstart M1 y M2; el script confirma el import y la longitud.
 
-- [ ] T004 [US1] Escribir `CLAUDE.md` en la raíz según contrato § `CLAUDE.md`: "≤ 60 líneas", línea `@.specify/memory/constitution.md` en su propia línea y fuera de bloques de código, stack y comandos marcados como objetivo hasta que existan (`uv sync`, `uv run pytest`, `uv run pytest -m e2e` y arranque del chat se habilitan en #4 y #8), estructura (`src/mcp_server`, `src/agent`, `src/chat`, `data/`, `specs/`) y flujo Spec Kit por ticket con rama por feature y PR con `Closes #N`; sin duplicar principios de la constitución (lo personal se documenta en T007)
-- [ ] T005 [US1] Agregar a `scripts/verificar_ecosistema.sh` las comprobaciones: existe `CLAUDE.md`, tiene ≤ 60 líneas y contiene una línea exacta `@.specify/memory/constitution.md`
+- [X] T004 [US1] Escribir `CLAUDE.md` en la raíz según contrato § `CLAUDE.md`: "≤ 60 líneas", línea `@.specify/memory/constitution.md` en su propia línea y fuera de bloques de código, stack y comandos marcados como objetivo hasta que existan (`uv sync`, `uv run pytest`, `uv run pytest -m e2e` y arranque del chat se habilitan en #4 y #8), estructura (`src/mcp_server`, `src/agent`, `src/chat`, `data/`, `specs/`) y flujo Spec Kit por ticket con rama por feature y PR con `Closes #N`; sin duplicar principios de la constitución (lo personal se documenta en T007)
+- [X] T005 [US1] Agregar a `scripts/verificar_ecosistema.sh` las comprobaciones: existe `CLAUDE.md`, tiene ≤ 60 líneas y contiene una línea exacta `@.specify/memory/constitution.md`
 
 **Checkpoint**: US1 verificable por sí sola.
 
@@ -63,8 +63,8 @@ una de forma independiente.
 
 **Independent Test**: quickstart M3.
 
-- [ ] T006 [P] [US2] Agregar a `scripts/verificar_ecosistema.sh` una comprobación con `git check-ignore` de que `CLAUDE.local.md` y `.claude/settings.local.json` están ignorados
-- [ ] T007 [US2] Documentar en `CLAUDE.md` (sección "Lo personal", una o dos líneas) que las preferencias van en `CLAUDE.local.md`, `.claude/settings.local.json` o `~/.claude/CLAUDE.md`, manteniendo el archivo en "≤ 60 líneas"
+- [X] T006 [P] [US2] Agregar a `scripts/verificar_ecosistema.sh` una comprobación con `git check-ignore` de que `CLAUDE.local.md` y `.claude/settings.local.json` están ignorados
+- [X] T007 [US2] Documentar en `CLAUDE.md` (sección "Lo personal", una o dos líneas) que las preferencias van en `CLAUDE.local.md`, `.claude/settings.local.json` o `~/.claude/CLAUDE.md`, manteniendo el archivo en "≤ 60 líneas"
 
 **Checkpoint**: US2 verificable por sí sola.
 
@@ -76,9 +76,9 @@ una de forma independiente.
 
 **Independent Test**: quickstart M7–M12.
 
-- [ ] T008 [P] [US4] Crear `.claude/settings.json` con `"$schema": "https://json.schemastore.org/claude-code-settings.json"` y `permissions.deny` exactamente con las reglas de research.md § R4 (`Read(./.env)`, `Read(./.env.*)`, `Read(**/.env)`, `Read(**/.env.*)`, `Read(!.env.example)`, `Read(!**/.env.example)`, `Read(./secrets/**)`, `Edit(./.env)`, `Edit(./.env.*)`, `Edit(**/.env)`, `Edit(**/.env.*)`, `Edit(./secrets/**)`); sin credenciales, sin hooks ni MCP (issues #2 y #3)
-- [ ] T009 [P] [US4] Crear `.env.example` en la raíz con "solo nombres de variables, sin valores": `ANTHROPIC_API_KEY=` y `GITHUB_PAT=`
-- [ ] T010 [US4] Agregar a `scripts/verificar_ecosistema.sh`: `.claude/settings.json` es JSON válido (`python3 -m json.tool`), contiene las reglas deny de `.env`, `.env.*` y `secrets/**`, y `.env.example` no tiene valores después de `=`
+- [X] T008 [P] [US4] Crear `.claude/settings.json` con `"$schema": "https://json.schemastore.org/claude-code-settings.json"` y `permissions.deny` exactamente con las reglas de research.md § R4 (`Read(./.env)`, `Read(./.env.*)`, `Read(**/.env)`, `Read(**/.env.*)`, `Read(!.env.example)`, `Read(!**/.env.example)`, `Read(./secrets/**)`, `Edit(./.env)`, `Edit(./.env.*)`, `Edit(**/.env)`, `Edit(**/.env.*)`, `Edit(./secrets/**)`); sin credenciales, sin hooks ni MCP (issues #2 y #3)
+- [X] T009 [P] [US4] Crear `.env.example` en la raíz con "solo nombres de variables, sin valores": `ANTHROPIC_API_KEY=` y `GITHUB_PAT=`
+- [X] T010 [US4] Agregar a `scripts/verificar_ecosistema.sh`: `.claude/settings.json` es JSON válido (`python3 -m json.tool`), contiene las reglas deny de `.env`, `.env.*` y `secrets/**`, y `.env.example` no tiene valores después de `=`
 
 **Checkpoint**: US4 verificable por sí sola.
 
@@ -90,10 +90,10 @@ una de forma independiente.
 
 **Independent Test**: quickstart M4–M6.
 
-- [ ] T011 [P] [US3] Crear `.claude/rules/tests.md` con frontmatter `paths:` en lista YAML (`"**/test_*.py"`, `"**/conftest.py"`) y el contenido de contrato § `tests.md`: test junto al módulo como `test_<módulo>.py`, pytest, unitarios sin red ni API key, e2e con `@pytest.mark.e2e`, datos solo ficticios (tarjetas por últimos 4 dígitos), afirmar sobre llamadas a herramientas y no solo sobre texto
-- [ ] T012 [P] [US3] Crear `.claude/rules/mcp-tools.md` con frontmatter `paths:` en lista YAML (`"src/mcp_server/**"`) y el contenido de contrato § `mcp-tools.md`: cuándo `buscar_cliente` vs `verificar_identidad`, qué hacer con varias coincidencias, formato de error `{"error": {"tipo": TRANSITORIO|VALIDACION|NEGOCIO|PERMISOS, "reintentable": bool, "mensaje": str}}`, búsqueda vacía no es error, datos solo ficticios
-- [ ] T013 [P] [US3] Crear `src/agent/CLAUDE.md` según contrato § `src/agent/CLAUDE.md`: por qué existe; reglas 1 y 2 con hooks `PreToolUse` del SDK que leen el estado de sesión y los datos del core, nunca los argumentos del modelo; estado verificado solo por `PostToolUse` exitoso de `verificar_identidad`; ciclo por razón de parada; subagente con contexto explícito; handoff autocontenido
-- [ ] T014 [US3] Agregar a `scripts/verificar_ecosistema.sh`: ambas reglas existen y su frontmatter declara `paths:`; existe `src/agent/CLAUDE.md`
+- [X] T011 [P] [US3] Crear `.claude/rules/tests.md` con frontmatter `paths:` en lista YAML (`"**/test_*.py"`, `"**/conftest.py"`) y el contenido de contrato § `tests.md`: test junto al módulo como `test_<módulo>.py`, pytest, unitarios sin red ni API key, e2e con `@pytest.mark.e2e`, datos solo ficticios (tarjetas por últimos 4 dígitos), afirmar sobre llamadas a herramientas y no solo sobre texto
+- [X] T012 [P] [US3] Crear `.claude/rules/mcp-tools.md` con frontmatter `paths:` en lista YAML (`"src/mcp_server/**"`) y el contenido de contrato § `mcp-tools.md`: cuándo `buscar_cliente` vs `verificar_identidad`, qué hacer con varias coincidencias, formato de error `{"error": {"tipo": TRANSITORIO|VALIDACION|NEGOCIO|PERMISOS, "reintentable": bool, "mensaje": str}}`, búsqueda vacía no es error, datos solo ficticios
+- [X] T013 [P] [US3] Crear `src/agent/CLAUDE.md` según contrato § `src/agent/CLAUDE.md`: por qué existe; reglas 1 y 2 con hooks `PreToolUse` del SDK que leen el estado de sesión y los datos del core, nunca los argumentos del modelo; estado verificado solo por `PostToolUse` exitoso de `verificar_identidad`; ciclo por razón de parada; subagente con contexto explícito; handoff autocontenido
+- [X] T014 [US3] Agregar a `scripts/verificar_ecosistema.sh`: ambas reglas existen y su frontmatter declara `paths:`; existe `src/agent/CLAUDE.md`
 
 **Checkpoint**: todas las historias verificables.
 
@@ -101,9 +101,9 @@ una de forma independiente.
 
 ## Phase 7: Polish & Cross-Cutting
 
-- [ ] T015 Ejecutar `bash scripts/verificar_ecosistema.sh` y corregir hasta que todo esté en `OK` con código de salida 0
+- [X] T015 Ejecutar `bash scripts/verificar_ecosistema.sh` y corregir hasta que todo esté en `OK` con código de salida 0
 - [ ] T016 Ejecutar los escenarios manuales M1–M13 de `specs/001-memoria-reglas-permisos/quickstart.md`, registrar el resultado de cada uno en una tabla al final de ese archivo y limpiar los archivos de prueba (`.env`, `secrets/`, archivos personales)
-- [ ] T017 Confirmar que ningún archivo nuevo contiene credenciales ni datos con forma real (`git diff main --stat` y revisión del contenido)
+- [X] T017 Confirmar que ningún archivo nuevo contiene credenciales ni datos con forma real (`git diff main --stat` y revisión del contenido)
 - [ ] T018 Revisión independiente (constitución § VII): lanzar un subagente de solo lectura (Read, Grep, Glob, `git diff`) sin el contexto de esta sesión, que revise `git diff main...HEAD` contra spec.md y contracts/configuracion.md; registrar hallazgos y su resolución en `specs/001-memoria-reglas-permisos/review.md`. Mientras no exista el subagente `code-reviewer` (issue #3), se usa uno ad hoc con la misma restricción de herramientas
 - [ ] T019 Revisión de cumplimiento (constitución § Governance): verificar los principios I a IV sobre el diff (I: CLAUDE.md importa la constitución y no altera umbrales; II: secretos protegidos por `permissions.deny`, no por instrucción; III: sin credenciales ni datos con forma real; IV: spec, plan y tareas presentes) y agregar el resultado a `specs/001-memoria-reglas-permisos/review.md`
 - [ ] T020 Cerrar el ciclo del ticket: abrir el PR de `001-memoria-reglas-permisos` hacia `main` con `Closes #1`, mover el issue #1 a In review en el Project y comentar en el issue lo especificado, lo decidido y lo pendiente
