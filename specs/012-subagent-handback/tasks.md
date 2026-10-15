@@ -9,4 +9,4 @@
   `agente.py` (tests en `test_agente.py`: configuración real y ningún hook que niegue la devolución)
 - [X] T004 Verificación en vivo sin regresiones (0 negaciones, delegación completa) y e2e;
   registrar en `quickstart.md`
-- [ ] T005 Cerrar el ticket con `/abrir-pr 23`
+- [X] T005 Cerrar el ticket con `/abrir-pr 23`
