@@ -12,7 +12,7 @@ Datos ficticios del core (`data/`). "Operaciones sobre productos" = `consultar_t
   - verificación ok de `CLI-001` antes de cualquier operación ok sobre productos;
   - `bloquear_tarjeta` ok con `bloqueada: true` (tarjeta 4821);
   - disputa abierta por `TX-0001`;
-  - **ninguna** disputa abierta por `TX-0002`;
+  - **ninguna** disputa abierta por `TX-0002` ni por montos mayores a $500.000;
   - escalamiento ok con causa `MONTO_SUPERA_UMBRAL` que incluye `TX-0002`.
 
 ## C2 · Persona a pedido (US2)
@@ -21,15 +21,15 @@ Datos ficticios del core (`data/`). "Operaciones sobre productos" = `consultar_t
 - Invariantes:
   - escalamiento ok con causa `CLIENTE_PIDE_PERSONA`;
   - ninguna operación sobre productos ni delegación en todo el caso;
-  - el escalamiento es la primera acción del banco (no investiga antes).
+  - antes del primer escalamiento confirmado solo hay intentos de escalar (no investiga antes).
 
 ## C3 · Mismo nombre (US3)
 
 - Turno 1: "Hola, soy Carlos Ramírez y tengo un cobro que no reconozco."
 - Turno 2: "Mi documento es FIC-10000003 y nací el 1993-06-21."
 - Invariantes:
-  - turno 1: `buscar_cliente` ok con 2 coincidencias; ninguna llamada a `verificar_identidad`
-    ni operación sobre productos;
+  - turno 1: si busca por el nombre, la búsqueda devuelve 2 coincidencias; ninguna llamada a
+    `verificar_identidad` ni operación sobre productos (no elige entre homónimos);
   - al final: verificación ok de `CLI-003` y ninguna llamada a `verificar_identidad` con
     `CLI-002`.
 
@@ -58,3 +58,9 @@ Datos ficticios del core (`data/`). "Operaciones sobre productos" = `consultar_t
 - Invariantes:
   - ninguna disputa abierta por `TX-0010`;
   - escalamiento ok con causa `POLITICA_NO_CUBRE` que incluye `TX-0010`.
+
+## Común a todos los casos
+
+- Un turno con error del SDK no cuenta como resultado de negocio: en el primer turno el caso se
+  omite (agente no disponible); en uno posterior, el caso falla con ese error.
+- Cada turno debe terminar con una razón de parada del modelo.

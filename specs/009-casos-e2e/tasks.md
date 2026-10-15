@@ -7,7 +7,7 @@
 - [X] T001 Tests unitarios (sin marcador) de las funciones de verificación con eventos
   sintéticos que deben pasar y que deben fallar, en `src/agent/test_e2e.py` (R8)
 - [X] T002 Funciones de verificación puras (`exitosos`, `llamadas`, `disputas_abiertas`,
-  `escalamientos`, `verificado_antes_de_operar`, `primera_accion`) en `src/agent/test_e2e.py`
+  `escalamientos`, `verificado_antes_de_operar`, `investigo_antes_de_escalar`, `disputas_sobre_umbral`) en `src/agent/test_e2e.py`
 - [X] T003 Fixture del agente por caso (core aislado, `pytest.skip` si `AgenteNoDisponible`,
   `fail_after(300)`) y helper `conversar` que imprime los eventos por turno (R2–R5)
 

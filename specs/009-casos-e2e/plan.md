@@ -80,7 +80,9 @@ CLAUDE.md                # línea del comando e2e corregida (requiere revisión 
 
 **Structure Decision**: los casos prueban el agente, así que viven junto a él
 (`.claude/rules/tests.md`). No se crea un módulo de ayudas aparte: se empaquetaría en el wheel y
-solo lo usan estos tests.
+solo lo usan estos tests. El nombre `test_e2e.py` se aparta de `test_<módulo>.py` porque
+los casos prueban el agente completo (`agente.py`, `garantias.py`, `subagente.py` y el servidor),
+no un módulo; es una excepción deliberada.
 
 ## Complexity Tracking
 

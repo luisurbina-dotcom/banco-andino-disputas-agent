@@ -27,5 +27,6 @@
 | `llamadas(eventos, herramienta)` | todos los eventos de esa herramienta, con cualquier resultado |
 | `disputas_abiertas(eventos)` | ids de transacción con `iniciar_disputa` ok y `id_disputa` |
 | `escalamientos(eventos)` | escalamientos ok (causa, transacciones, id_caso) |
-| `verificado_antes_de_operar(eventos)` | toda operación ok sobre productos va después de una verificación ok |
-| `primera_accion(eventos)` | primer evento del banco (para la regla 4) |
+| `verificado_antes_de_operar(eventos)` | toda operación ok sobre productos va después de verificar a **su** cliente (una identidad bloqueada deja de contar) |
+| `investigo_antes_de_escalar(eventos)` | hubo una acción distinta de escalar antes del primer escalamiento confirmado (regla 4) |
+| `disputas_sobre_umbral(eventos)` | disputas abiertas por montos > $500.000 (regla 2) |
