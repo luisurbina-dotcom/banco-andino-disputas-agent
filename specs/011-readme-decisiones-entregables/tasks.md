@@ -4,17 +4,17 @@
 
 ## Fase 1: Empaquetado (US3), tests primero
 
-- [ ] T001 `scripts/test_empaquetar.py`: nombres prohibidos, credenciales y datos con forma real
+- [X] T001 `scripts/test_empaquetar.py`: nombres prohibidos, credenciales y datos con forma real
   se rechazan; `.env.example` se permite; el `.zip` incluye `.git` y respeta el tamaño máximo
   (repos git de prueba en `tmp_path`); `scripts` en `testpaths`
-- [ ] T002 `scripts/empaquetar.py` (R1, R2, contrato)
+- [X] T002 `scripts/empaquetar.py` (R1, R2, contrato)
 
 ## Fase 2: Documentos y guiones (US1, US2, US4)
 
-- [ ] T003 [US4] Guiones `demo/c1…c6` y `demo/GUION_VIDEO.md`
-- [ ] T004 [US2] `DECISIONES.md` (11 necesidades, ≤ 1.000 palabras)
-- [ ] T005 [US1] `README.md`
-- [ ] T006 Sección README/DECISIONES en `scripts/verificar_ecosistema.sh`
+- [X] T003 [US4] Guiones `demo/c1…c6` y `demo/GUION_VIDEO.md`
+- [X] T004 [US2] `DECISIONES.md` (11 necesidades, ≤ 1.000 palabras)
+- [X] T005 [US1] `README.md`
+- [X] T006 Sección README/DECISIONES en `scripts/verificar_ecosistema.sh`
 
 ## Fase 3: Verificación
 
