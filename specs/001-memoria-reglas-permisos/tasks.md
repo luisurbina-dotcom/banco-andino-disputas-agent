@@ -50,7 +50,7 @@ una de forma independiente.
 
 **Independent Test**: quickstart M1 y M2; el script confirma el import y la longitud.
 
-- [ ] T004 [US1] Escribir `CLAUDE.md` en la raíz según contrato § `CLAUDE.md`: "≤ 60 líneas", línea `@.specify/memory/constitution.md` en su propia línea y fuera de bloques de código, stack y comandos (`uv sync`, `uv run pytest`, `uv run pytest -m e2e`, arranque del chat), estructura (`src/mcp_server`, `src/agent`, `src/chat`, `data/`, `specs/`), flujo Spec Kit por ticket con rama por feature y PR con `Closes #N`, y dónde va lo personal; sin duplicar principios de la constitución
+- [ ] T004 [US1] Escribir `CLAUDE.md` en la raíz según contrato § `CLAUDE.md`: "≤ 60 líneas", línea `@.specify/memory/constitution.md` en su propia línea y fuera de bloques de código, stack y comandos marcados como objetivo hasta que existan (`uv sync`, `uv run pytest`, `uv run pytest -m e2e` y arranque del chat se habilitan en #4 y #8), estructura (`src/mcp_server`, `src/agent`, `src/chat`, `data/`, `specs/`) y flujo Spec Kit por ticket con rama por feature y PR con `Closes #N`; sin duplicar principios de la constitución (lo personal se documenta en T007)
 - [ ] T005 [US1] Agregar a `scripts/verificar_ecosistema.sh` las comprobaciones: existe `CLAUDE.md`, tiene ≤ 60 líneas y contiene una línea exacta `@.specify/memory/constitution.md`
 
 **Checkpoint**: US1 verificable por sí sola.
@@ -102,8 +102,11 @@ una de forma independiente.
 ## Phase 7: Polish & Cross-Cutting
 
 - [ ] T015 Ejecutar `bash scripts/verificar_ecosistema.sh` y corregir hasta que todo esté en `OK` con código de salida 0
-- [ ] T016 Ejecutar los escenarios manuales M1–M12 de `specs/001-memoria-reglas-permisos/quickstart.md`, registrar el resultado de cada uno en una tabla al final de ese archivo y limpiar los archivos de prueba (`.env`, `secrets/`, archivos personales)
+- [ ] T016 Ejecutar los escenarios manuales M1–M13 de `specs/001-memoria-reglas-permisos/quickstart.md`, registrar el resultado de cada uno en una tabla al final de ese archivo y limpiar los archivos de prueba (`.env`, `secrets/`, archivos personales)
 - [ ] T017 Confirmar que ningún archivo nuevo contiene credenciales ni datos con forma real (`git diff main --stat` y revisión del contenido)
+- [ ] T018 Revisión independiente (constitución § VII): lanzar un subagente de solo lectura (Read, Grep, Glob, `git diff`) sin el contexto de esta sesión, que revise `git diff main...HEAD` contra spec.md y contracts/configuracion.md; registrar hallazgos y su resolución en `specs/001-memoria-reglas-permisos/review.md`. Mientras no exista el subagente `code-reviewer` (issue #3), se usa uno ad hoc con la misma restricción de herramientas
+- [ ] T019 Revisión de cumplimiento (constitución § Governance): verificar los principios I a IV sobre el diff (I: CLAUDE.md importa la constitución y no altera umbrales; II: secretos protegidos por `permissions.deny`, no por instrucción; III: sin credenciales ni datos con forma real; IV: spec, plan y tareas presentes) y agregar el resultado a `specs/001-memoria-reglas-permisos/review.md`
+- [ ] T020 Cerrar el ciclo del ticket: abrir el PR de `001-memoria-reglas-permisos` hacia `main` con `Closes #1`, mover el issue #1 a In review en el Project y comentar en el issue lo especificado, lo decidido y lo pendiente
 
 ---
 
@@ -115,7 +118,7 @@ una de forma independiente.
 - **US4** y **US3** son independientes de US1/US2 y entre sí.
 - Las tareas que tocan `scripts/verificar_ecosistema.sh` (T005, T006, T010, T014) se hacen en
   secuencia porque editan el mismo archivo.
-- **Polish (T015–T017)** al final.
+- **Polish (T015–T020)** al final, en orden: verificación (T015–T017) → revisiones (T018–T019) → cierre (T020).
 
 ## Parallel Opportunities
 

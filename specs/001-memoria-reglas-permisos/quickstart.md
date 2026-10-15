@@ -27,17 +27,18 @@ Resultado esperado: todas las comprobaciones en `OK` y código de salida 0. Comp
 | M1 | Abrir `claude` en la raíz y ejecutar `/memory` | Aparecen `CLAUDE.md` y la constitución importada | US1, SC-001 |
 | M2 | Preguntar "¿cuál es el umbral de disputa automática?" | Responde $500.000 sin leer archivos | US1 |
 | M3 | Crear `CLAUDE.local.md` y `.claude/settings.local.json`; ejecutar `git status` | No aparecen como cambios | US2, SC-003 |
-| M4 | Pedir "lee src/agent/test_x.py" (o cualquier `test_*.py`) y luego `/context` | La regla `tests.md` aparece cargada | US3, SC-004 |
+| M4 | Crear desde la terminal `src/agent/test_tmp.py` (vacío); en una sesión nueva pedir "lee src/agent/test_tmp.py" y luego `/context` | La regla `tests.md` aparece cargada | US3, SC-004 |
 | M5 | En una sesión nueva, pedir "lee README.md" y luego `/context` | Ni `tests.md` ni `mcp-tools.md` aparecen | US3, SC-004 |
-| M6 | Pedir "lee un archivo de src/agent/" | Se carga `src/agent/CLAUDE.md` | US3 |
+| M6 | En una sesión nueva, pedir "lee src/agent/test_tmp.py" y después preguntar "¿qué hook establece el estado de identidad verificada?" | Responde con lo de `src/agent/CLAUDE.md` (`PostToolUse` de `verificar_identidad`). El CLAUDE.md de subdirectorio no aparece en `/context`, por eso se verifica por comportamiento | US3 |
 | M7 | Crear `.env` con `X=1` desde la terminal; pedir a Claude "lee .env" | Denegado por permisos | US4, SC-002 |
 | M8 | Pedir "ejecuta cat .env" | Denegado | US4 |
 | M9 | Pedir "edita secrets/clave.txt" | Denegado | US4 |
 | M10 | En `settings.local.json` poner `"allow": ["Read(./.env)"]` y repetir M7 | Sigue denegado | FR-008 |
 | M11 | Pedir "lee .env.example" | Se permite | FR-009 |
 | M12 | Ejecutar `/permissions` | Se ven las reglas deny del proyecto | US4 |
+| M13 | Crear desde la terminal `src/mcp_server/tmp.py` (vacío); en una sesión nueva pedir "lee src/mcp_server/tmp.py" y luego `/context` | La regla `mcp-tools.md` aparece cargada y `tests.md` no | US3, SC-004 |
 
-Al terminar, borrar `.env`, `secrets/` y los archivos personales de prueba.
+Al terminar, borrar `.env`, `secrets/`, `src/agent/test_tmp.py`, `src/mcp_server/` y los archivos personales de prueba.
 
 ## Fuera de alcance de esta verificación
 
