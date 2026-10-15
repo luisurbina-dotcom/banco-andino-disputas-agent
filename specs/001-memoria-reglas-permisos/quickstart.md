@@ -67,5 +67,6 @@ Script estático: `bash scripts/verificar_ecosistema.sh` → 19 comprobaciones e
 Hallazgos adicionales:
 
 - `Read` de un `.env.local` anidado (`src/sub/.env.local`) también es denegado (caso borde).
+- Tras la enmienda: `src/x/secrets/token.txt` y `certs/server.key` también son denegados.
 - `Write .env.example` es denegado para Claude: `Read(!.env.example)` solo exceptúa la lectura.
   Decisión: se mantiene así (la plantilla la crea o edita una persona); ver tarea T009.

@@ -49,12 +49,14 @@ Verificado contra la documentación oficial de Claude Code el 2026-10-15:
   "deny": [
     "Read(./.env)", "Read(./.env.*)", "Read(**/.env)", "Read(**/.env.*)",
     "Read(!.env.example)", "Read(!**/.env.example)",
-    "Read(./secrets/**)",
+    "Read(**/.envrc)", "Read(**/secrets/**)", "Read(**/*.pem)", "Read(**/*.key)",
     "Edit(./.env)", "Edit(./.env.*)", "Edit(**/.env)", "Edit(**/.env.*)",
-    "Edit(./secrets/**)"
+    "Edit(**/.envrc)", "Edit(**/secrets/**)", "Edit(**/*.pem)", "Edit(**/*.key)"
   ]
   ```
 
+- **Enmienda (revisión independiente, review.md #2 y #3)**: `./secrets/**` pasó a
+  `**/secrets/**` para cubrir carpetas anidadas, y se agregaron `.envrc`, `*.pem` y `*.key`.
 - **Rationale**:
   - Los patrones siguen el estilo gitignore: `./` es relativo al directorio de trabajo, `**/`
     coincide a cualquier profundidad.

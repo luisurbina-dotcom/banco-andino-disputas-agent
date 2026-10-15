@@ -27,7 +27,7 @@ Python 3.12 con uv. Comandos objetivo (se habilitan en los issues #4 y #8):
 
 1. Un ticket del GitHub Project → una rama `NNN-nombre` → una carpeta `specs/NNN-nombre/`.
 2. `/speckit-specify` con el issue como insumo, luego `plan`, `tasks`, `analyze`, `implement`.
-3. Nada de código de producción sin `spec.md`, `plan.md` y `tasks.md` de su feature.
+3. Spec primero: ver principio IV de la constitución.
 4. Antes del PR: revisión independiente y revisión de cumplimiento.
 5. El PR lleva `Closes #N`. Commits en español, estilo `tipo(alcance): descripción`.
 
