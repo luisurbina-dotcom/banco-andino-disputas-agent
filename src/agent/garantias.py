@@ -221,13 +221,22 @@ def pre_delegacion(estado: EstadoSesion):
     return hook
 
 
-def pre_herramientas_permitidas(estado: EstadoSesion, permitidas: set[str]):
+def pre_herramientas_permitidas(
+    estado: EstadoSesion, permitidas: set[str], solo_subagentes: set[str] = frozenset()
+):
     """PreToolUse sin matcher: niega cualquier herramienta fuera de la lista permitida, la llame
-    el agente principal o un subagente (defensa si cambia la configuración de herramientas)."""
+    el agente principal o un subagente (defensa si cambia la configuración de herramientas).
+
+    `solo_subagentes`: herramientas internas que solo pasan si las llama un subagente (por
+    ejemplo, la devolución de su resultado al agente principal). Sin `agent_type`, se niegan.
+    """
 
     async def hook(entrada: dict, tool_use_id, contexto) -> dict:
         try:
-            permitido = entrada.get("tool_name") in permitidas
+            nombre = entrada.get("tool_name")
+            permitido = nombre in permitidas or (
+                nombre in solo_subagentes and _agente(entrada) != "principal"
+            )
         except Exception:  # fail-closed
             permitido = False
         if permitido:

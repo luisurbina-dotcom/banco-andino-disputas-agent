@@ -163,3 +163,13 @@ async def test_la_guardia_real_deja_pasar_el_flujo_normal(estado):
     (guardia,) = [m for m in opciones.hooks["PreToolUse"] if m.matcher is None]
     for herramienta in [*HERRAMIENTAS, "Agent", "Task"]:
         assert await guardia.hooks[0]({"tool_name": herramienta}, "t", None) == {}
+
+
+async def test_el_guardia_configurado_deja_devolver_solo_al_subagente(estado):
+    opciones = construir_opciones(estado)
+    (guardia,) = [m for m in opciones.hooks["PreToolUse"] if m.matcher is None]
+    hook = guardia.hooks[0]
+    devolucion = {"tool_name": "SubagentHandback", "tool_input": {}}
+    assert await hook({**devolucion, "agent_type": "analista-transacciones"}, "t", None) == {}
+    negada = await hook(devolucion, "t", None)
+    assert negada["hookSpecificOutput"]["permissionDecision"] == "deny"

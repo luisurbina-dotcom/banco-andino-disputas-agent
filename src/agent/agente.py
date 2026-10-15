@@ -47,6 +47,9 @@ HERRAMIENTAS = [
     )
 ]
 MATCHER_BANCO = "mcp__banco__.*"
+# Herramientas internas de Claude Code que solo puede usar un subagente: la devolución de su
+# resultado al agente principal (no ejecuta acciones del banco).
+HERRAMIENTAS_INTERNAS_SUBAGENTE = {"SubagentHandback"}
 
 
 class AgenteNoDisponible(RuntimeError):
@@ -91,7 +94,13 @@ def construir_opciones(
             "PreToolUse": [
                 HookMatcher(
                     matcher=None,
-                    hooks=[pre_herramientas_permitidas(estado, {*HERRAMIENTAS, "Agent", "Task"})],
+                    hooks=[
+                        pre_herramientas_permitidas(
+                            estado,
+                            {*HERRAMIENTAS, "Agent", "Task"},
+                            solo_subagentes=HERRAMIENTAS_INTERNAS_SUBAGENTE,
+                        )
+                    ],
                 ),
                 HookMatcher(matcher=MATCHER_BANCO, hooks=[pre_reglas(estado)]),
                 HookMatcher(matcher="Agent|Task", hooks=[pre_delegacion(estado)]),
