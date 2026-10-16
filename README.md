@@ -102,8 +102,11 @@ uv run python scripts/conversar.py "mensaje" …      # conversación con traza 
 uv run python scripts/empaquetar.py                 # .zip para Code Defense (con .git, ≤ 50 MB)
 ```
 
+Para abrir el `.zip`, usa `unzip banco-andino-disputas-agent.zip`: conserva los permisos de
+ejecución de los scripts. `python -m zipfile -e` los pierde (corre igual con `bash script.sh`).
+Sin `git` instalado, los tests que arman repositorios de prueba se saltan con su motivo.
+
 ## Pendiente del autor
 
 - Publicar el video de funcionamiento y reemplazar el texto "pendiente" de arriba por el enlace.
-- Dejar el GitHub Project visible para los evaluadores.
 - Generar el `.zip` desde `main` con `uv run python scripts/empaquetar.py` y subirlo a Code Defense.

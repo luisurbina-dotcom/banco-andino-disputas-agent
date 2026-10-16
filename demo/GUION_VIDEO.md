@@ -17,9 +17,10 @@ Opcional: corre cada caso una vez antes de grabar para calentar la caché.
 
 Al final de cada caso, el chat muestra el **resumen de la sesión** con las acciones reales.
 
-Antes de grabar, confirma que está corregido el ticket de `SubagentHandback`. Mientras no lo esté,
-el guardia de herramientas niega la devolución del subagente: aparecen recuadros ⛔ NEGADO con
-"SubagentHandback" en C1 y C6, y el agente principal repite la consulta.
+La devolución del subagente (`SubagentHandback`) está corregida desde el #23. Si aun así aparece un
+⛔ NEGADO con "SubagentHandback" en C1 o C6, no cortes la toma: es el guardia fallando cerrado ante
+una llamada sin tipo de agente, el riesgo residual registrado en `DECISIONES.md` y en
+`specs/012-subagent-handback/spec.md`. El agente principal repite la consulta y el caso termina bien.
 
 Cierre sugerido (10 s): `uv run pytest -m e2e -v` ya corriendo o su resultado (6 passed), para
 mostrar que los mismos casos tienen aserciones automáticas.
