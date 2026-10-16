@@ -103,8 +103,10 @@ uv run python scripts/empaquetar.py                 # .zip para Code Defense (co
 ```
 
 Para abrir el `.zip`, usa `unzip banco-andino-disputas-agent.zip`: conserva los permisos de
-ejecución de los scripts. `python -m zipfile -e` los pierde (corre igual con `bash script.sh`).
-Sin `git` instalado, los tests que arman repositorios de prueba se saltan con su motivo.
+ejecución de los scripts. `python -m zipfile -e` los pierde: corre igual con `bash script.sh`, pero
+`git status` marca esos scripts como modificados (`git config core.fileMode false` lo evita).
+Sin `git` instalado, los tests que arman repositorios de prueba se saltan con su motivo;
+`verificar_ecosistema.sh` sí necesita `git`.
 
 ## Pendiente del autor
 

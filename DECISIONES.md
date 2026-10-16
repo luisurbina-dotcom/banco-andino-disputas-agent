@@ -35,7 +35,8 @@ instrucciones (CLAUDE.md, reglas por ruta, prompts). La matriz completa está en
 - **Subagente** `analista-transacciones`: solo puede `consultar_transacciones`, y recibe el
   contexto de forma explícita en el encargo. `pre_delegacion` solo admite esa delegación, y
   `pre_herramientas_permitidas` solo deja que ese subagente devuelva su resultado
-  (`SubagentHandback`, #23). El autor decidió corregirlo en un ticket aparte. Riesgo residual: la
+  (`SubagentHandback`). Al principio el guardia negaba esa devolución (detectado en el #11); el
+  autor decidió corregirlo en un ticket aparte, el #23. Riesgo residual: la
   llamada no se volvió a observar en vivo; si llega sin el tipo de agente, se niega (falla cerrada).
 - **Interfaz**: los recuadros del chat salen de los eventos de los hooks, no del texto del modelo.
 - **Verificación**: los seis casos obligatorios corren como e2e con aserciones sobre las
