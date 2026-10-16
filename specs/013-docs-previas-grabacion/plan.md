@@ -28,6 +28,7 @@ de equipo.
 
 ```text
 scripts/test_empaquetar.py  # pytestmark skipif sin git; _es_superficial sin git
+.claude/hooks/test_spec_primero.py  # pytestmark skipif sin git (hallado en T002)
 README.md                   # cómo descomprimir el paquete
 DECISIONES.md               # quién decidió cada excepción y riesgo residual
 demo/GUION_VIDEO.md         # aviso de SubagentHandback actualizado
@@ -39,7 +40,9 @@ demo/GUION_VIDEO.md         # aviso de SubagentHandback actualizado
   test: un único motivo visible y ningún test intenta `git`.
 - **Alternatives**: `pytest.importorskip` no aplica (falta un binario, no un módulo).
 - Otros tests del repo que usan `git` se verifican en el mismo contenedor; si alguno falla sin
-  `git`, se trata igual.
+  `git`, se trata igual. Resultado: `test_spec_primero.py` (el hook decide por la rama) recibe la
+  misma marca. `verificar_ecosistema.sh` comprueba qué ignora git, así que `git` queda como
+  requisito documentado en el README.
 
 ## Complexity Tracking
 
