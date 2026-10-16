@@ -1,6 +1,10 @@
+import shutil
 import subprocess
 
 import pytest
+
+# El hook decide por la rama de git: sin el binario se salta en lugar de fallar.
+pytestmark = pytest.mark.skipif(shutil.which("git") is None, reason="git no está instalado")
 
 
 def _git(repo, *args):
