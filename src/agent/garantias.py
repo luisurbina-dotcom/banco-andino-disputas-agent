@@ -11,6 +11,7 @@ Formatos verificados en vivo: specs/006-agente-hooks-reglas/research.md (R3).
 """
 
 import json
+from collections.abc import Collection
 from dataclasses import dataclass, field
 from datetime import date
 
@@ -35,6 +36,7 @@ MOTIVO_FALLO = "Garantía no disponible; la operación se niega por seguridad."
 MOTIVO_DELEGACION = "Solo puedes delegar en el subagente analista-transacciones."
 MOTIVO_SUBAGENTE = "El analista de transacciones solo puede consultar transacciones."
 MOTIVO_HERRAMIENTA_AJENA = "Herramienta no permitida para el agente de disputas."
+MOTIVO_DEVOLUCION_SUBAGENTE = "Devolución del resultado del analista al agente principal."
 SUBAGENTE_ANALISTA = "analista-transacciones"
 MOTIVO_PRODUCTO_AJENO = (
     "Regla 1: la tarjeta o la transacción no pertenece al cliente verificado en esta conversación."
@@ -75,6 +77,16 @@ def _nombre(entrada) -> str:
 
 def _agente(entrada) -> str:
     return (entrada.get("agent_type") if isinstance(entrada, dict) else None) or "principal"
+
+
+def _autorizar(motivo: str) -> dict:
+    return {
+        "hookSpecificOutput": {
+            "hookEventName": "PreToolUse",
+            "permissionDecision": "allow",
+            "permissionDecisionReason": motivo,
+        }
+    }
 
 
 def _negar(motivo: str) -> dict:
@@ -221,15 +233,33 @@ def pre_delegacion(estado: EstadoSesion):
     return hook
 
 
-def pre_herramientas_permitidas(estado: EstadoSesion, permitidas: set[str]):
+def pre_herramientas_permitidas(
+    estado: EstadoSesion,
+    permitidas: Collection[str],
+    solo_subagentes: Collection[str] = frozenset(),
+):
     """PreToolUse sin matcher: niega cualquier herramienta fuera de la lista permitida, la llame
-    el agente principal o un subagente (defensa si cambia la configuración de herramientas)."""
+    el agente principal o un subagente (defensa si cambia la configuración de herramientas).
+
+    `solo_subagentes`: herramientas internas que solo puede usar el analista de transacciones
+    (la devolución de su resultado al agente principal). Se autorizan de forma explícita, porque
+    no están en `allowed_tools`; sin `agent_type` del analista, se niegan.
+    """
+
+    # Un str haría que `in` compare subcadenas y ensancharía la defensa: se exigen colecciones.
+    if isinstance(permitidas, str) or isinstance(solo_subagentes, str):
+        raise TypeError("permitidas y solo_subagentes deben ser colecciones de nombres")
+    permitidas, solo_subagentes = frozenset(permitidas), frozenset(solo_subagentes)
 
     async def hook(entrada: dict, tool_use_id, contexto) -> dict:
         try:
-            permitido = entrada.get("tool_name") in permitidas
+            nombre = entrada.get("tool_name")
+            permitido = nombre in permitidas
+            interna = nombre in solo_subagentes and _agente(entrada) == SUBAGENTE_ANALISTA
         except Exception:  # fail-closed
-            permitido = False
+            permitido = interna = False
+        if interna:
+            return _autorizar(MOTIVO_DEVOLUCION_SUBAGENTE)
         if permitido:
             return {}
         argumentos = entrada.get("tool_input") if isinstance(entrada, dict) else None

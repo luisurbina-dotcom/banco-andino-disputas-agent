@@ -1,3 +1,4 @@
+import re
 import sys
 
 import pytest
@@ -163,3 +164,31 @@ async def test_la_guardia_real_deja_pasar_el_flujo_normal(estado):
     (guardia,) = [m for m in opciones.hooks["PreToolUse"] if m.matcher is None]
     for herramienta in [*HERRAMIENTAS, "Agent", "Task"]:
         assert await guardia.hooks[0]({"tool_name": herramienta}, "t", None) == {}
+
+
+async def test_el_guardia_configurado_deja_devolver_solo_al_subagente(estado):
+    opciones = construir_opciones(estado)
+    (guardia,) = [m for m in opciones.hooks["PreToolUse"] if m.matcher is None]
+    hook = guardia.hooks[0]
+    devolucion = {"tool_name": "SubagentHandback", "tool_input": {}}
+    del_analista = {**devolucion, "agent_type": "analista-transacciones"}
+    permitida = await hook(del_analista, "t", None)
+    assert permitida["hookSpecificOutput"]["permissionDecision"] == "allow"
+    negada = await hook(devolucion, "t", None)
+    assert negada["hookSpecificOutput"]["permissionDecision"] == "deny"
+
+
+async def test_ningun_hook_configurado_niega_la_devolucion_del_analista(estado):
+    # Si un matcher cambiara (p. ej. "(?i)agent"), la devolución volvería a negarse en silencio.
+    opciones = construir_opciones(estado)
+    entrada = {
+        "tool_name": "SubagentHandback",
+        "tool_input": {},
+        "agent_type": "analista-transacciones",
+    }
+    for grupo in opciones.hooks["PreToolUse"]:
+        if grupo.matcher is None or re.search(grupo.matcher, entrada["tool_name"]):
+            for hook in grupo.hooks:
+                salida = await hook(entrada, "t", None)
+                decision = (salida or {}).get("hookSpecificOutput", {}).get("permissionDecision")
+                assert decision != "deny", hook.__qualname__

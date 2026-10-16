@@ -369,3 +369,48 @@ async def test_un_subagente_no_puede_delegar(estado):
     entrada = {**_entrada_agente("analista-transacciones"), "agent_type": "analista-transacciones"}
     salida = await pre_delegacion(estado)(entrada, "t", None)
     assert _decision(salida) == ("deny", MOTIVO_DELEGACION)
+
+
+SOLO_SUBAGENTES = {"SubagentHandback"}
+
+
+def _guardia(estado):
+    return pre_herramientas_permitidas(
+        estado, {"mcp__banco__buscar_cliente", "Agent"}, solo_subagentes=SOLO_SUBAGENTES
+    )
+
+
+async def test_un_subagente_puede_devolver_su_resultado(estado):
+    entrada = {
+        "tool_name": "SubagentHandback",
+        "tool_input": {},
+        "agent_type": "analista-transacciones",
+    }
+    salida = await _guardia(estado)(entrada, "t", None)
+    assert _decision(salida)[0] == "allow"  # explícito: no está en allowed_tools
+    assert estado.eventos == []  # no se registra como negación
+
+
+@pytest.mark.parametrize("agente", [None, "", "principal", "otro-subagente"])
+async def test_la_devolucion_fuera_de_un_subagente_se_niega(estado, agente):
+    entrada = {"tool_name": "SubagentHandback", "tool_input": {}}
+    if agente is not None:
+        entrada["agent_type"] = agente
+    salida = await _guardia(estado)(entrada, "t", None)
+    assert _decision(salida) == ("deny", MOTIVO_HERRAMIENTA_AJENA)
+
+
+async def test_un_subagente_sigue_sin_poder_usar_herramientas_ajenas(estado):
+    entrada = {"tool_name": "Bash", "tool_input": {}, "agent_type": "analista-transacciones"}
+    salida = await _guardia(estado)(entrada, "t", None)
+    assert _decision(salida) == ("deny", MOTIVO_HERRAMIENTA_AJENA)
+
+
+async def test_entrada_malformada_se_niega_con_solo_subagentes(estado):
+    salida = await _guardia(estado)(None, "t", None)
+    assert _decision(salida) == ("deny", MOTIVO_HERRAMIENTA_AJENA)
+
+
+def test_el_guardia_rechaza_listas_como_texto(estado):
+    with pytest.raises(TypeError):
+        pre_herramientas_permitidas(estado, {"Agent"}, solo_subagentes="SubagentHandback")
