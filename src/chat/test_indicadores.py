@@ -157,6 +157,20 @@ def test_orden_y_resumen():
     }
 
 
+@pytest.mark.parametrize(
+    ("datos", "esperado"),
+    [
+        ({"total": 1}, "1 transacción · por principal"),
+        ({"total": 3}, "3 transacciones · por principal"),
+        ({"total": 0}, "0 transacciones · por principal"),
+        ({}, "0 transacciones · por principal"),
+    ],
+)
+def test_consulta_concuerda_en_numero(datos, esperado):
+    evento = Evento("consultar_transacciones", {}, "ok", datos, "principal")
+    assert _uno(evento).detalle == esperado
+
+
 @pytest.mark.parametrize("nombre", ["iniciar_disputa", "bloquear_tarjeta", "escalar_a_analista"])
 def test_accion_sin_confirmacion_del_banco_no_se_afirma(nombre):
     (indicador,) = desde_eventos([Evento(nombre, {}, "ok", None)])
