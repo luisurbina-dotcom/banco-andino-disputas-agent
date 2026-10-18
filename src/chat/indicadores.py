@@ -93,7 +93,10 @@ def _indicador(evento: Evento) -> Indicador:
             False, "⚠", "Verificación fallida", f"intentos restantes: {restantes}", "yellow"
         )
     if nombre == "consultar_transacciones":
-        detalle = f"{datos.get('total', 0)} transacciones · por {evento.agente}"
+        total = datos.get("total", 0)
+        detalle = (
+            f"{total} transacci" + ("ón" if total == 1 else "ones") + f" · por {evento.agente}"
+        )
         return Indicador(False, "📋", "Consulta de transacciones", detalle, "dim")
     return Indicador(False, "•", nombre, evento.resultado, "dim")
 

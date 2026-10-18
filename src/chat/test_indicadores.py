@@ -119,7 +119,11 @@ def test_detalles_de_secundarios():
     consulta = _uno(
         Evento("consultar_transacciones", {}, "ok", {"total": 3}, "analista-transacciones")
     )
-    assert "3" in consulta.detalle and "analista-transacciones" in consulta.detalle
+    assert "3 transacciones" in consulta.detalle and "analista-transacciones" in consulta.detalle
+    assert (
+        "1 transacción ·"
+        in _uno(Evento("consultar_transacciones", {}, "ok", {"total": 1}, "principal")).detalle
+    )
     assert (
         "POLITICA_NO_CUBRE"
         in _uno(
