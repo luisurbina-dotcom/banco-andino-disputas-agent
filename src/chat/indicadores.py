@@ -94,9 +94,8 @@ def _indicador(evento: Evento) -> Indicador:
         )
     if nombre == "consultar_transacciones":
         total = datos.get("total", 0)
-        detalle = (
-            f"{total} transacci" + ("ón" if total == 1 else "ones") + f" · por {evento.agente}"
-        )
+        palabra = "transacción" if total == 1 else "transacciones"
+        detalle = f"{total} {palabra} · por {evento.agente}"
         return Indicador(False, "📋", "Consulta de transacciones", detalle, "dim")
     return Indicador(False, "•", nombre, evento.resultado, "dim")
 

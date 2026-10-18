@@ -119,11 +119,7 @@ def test_detalles_de_secundarios():
     consulta = _uno(
         Evento("consultar_transacciones", {}, "ok", {"total": 3}, "analista-transacciones")
     )
-    assert "3 transacciones" in consulta.detalle and "analista-transacciones" in consulta.detalle
-    assert (
-        "1 transacción ·"
-        in _uno(Evento("consultar_transacciones", {}, "ok", {"total": 1}, "principal")).detalle
-    )
+    assert "3" in consulta.detalle and "analista-transacciones" in consulta.detalle
     assert (
         "POLITICA_NO_CUBRE"
         in _uno(
@@ -159,6 +155,20 @@ def test_orden_y_resumen():
         "NEGADO": 1,
         "ESCALADO A ANALISTA": 1,
     }
+
+
+@pytest.mark.parametrize(
+    ("datos", "esperado"),
+    [
+        ({"total": 1}, "1 transacción · por principal"),
+        ({"total": 3}, "3 transacciones · por principal"),
+        ({"total": 0}, "0 transacciones · por principal"),
+        ({}, "0 transacciones · por principal"),
+    ],
+)
+def test_consulta_concuerda_en_numero(datos, esperado):
+    evento = Evento("consultar_transacciones", {}, "ok", datos, "principal")
+    assert _uno(evento).detalle == esperado
 
 
 @pytest.mark.parametrize("nombre", ["iniciar_disputa", "bloquear_tarjeta", "escalar_a_analista"])
