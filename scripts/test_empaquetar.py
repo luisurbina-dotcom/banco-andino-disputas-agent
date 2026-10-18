@@ -1,3 +1,4 @@
+import shutil
 import subprocess
 import zipfile
 
@@ -13,6 +14,9 @@ GIT = [
     "-c",
     "commit.gpgsign=false",
 ]
+
+# Todo el módulo arma repos con git: sin el binario se salta en lugar de cortar la suite.
+pytestmark = pytest.mark.skipif(shutil.which("git") is None, reason="git no está instalado")
 
 
 def _repo(tmp_path, archivos: dict[str, str], ignorados: dict[str, str] | None = None):
@@ -187,6 +191,8 @@ def test_excepcion_historica_permite_solo_el_blob_exacto(tmp_path, monkeypatch):
 
 
 def _es_superficial() -> bool:
+    if shutil.which("git") is None:
+        return False  # pytestmark ya salta el módulo
     salida = subprocess.run(
         ["git", "rev-parse", "--is-shallow-repository"],
         cwd=empaquetar.RAIZ_REPO,
