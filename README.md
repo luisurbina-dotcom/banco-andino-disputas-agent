@@ -52,7 +52,7 @@ o exporta `ANTHROPIC_API_KEY`.
 | Cobro fuera de política | `uv run python -m chat --guion demo/c6_fuera_de_politica.txt` | Escala sin disputar |
 
 Los mismos casos tienen aserciones automáticas sobre las herramientas llamadas, negadas o no
-llamadas. Toman entre 3 y 4 minutos y usan el modelo real:
+llamadas. Toman entre 2 y 5 minutos y usan el modelo real:
 
 ```bash
 uv run pytest -m e2e -v

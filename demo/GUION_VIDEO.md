@@ -23,14 +23,14 @@ La columna "Qué debe verse" es la lista de control; no se lee en voz alta. Ante
 dice en una frase qué regla muestra y, mientras corre, se señalan los recuadros.
 
 Intro (10–15 s): "Agente de disputas de Banco Andino, con datos ficticios. Voy a correr los seis
-casos obligatorios. Los recuadros de color son acciones reales en el core: salen de los hooks, no
-del texto del modelo".
+casos obligatorios. Los recuadros de color muestran lo que realmente pasó en el banco: salen de los
+eventos que registran los hooks, no del texto del modelo".
 
 | # | Antes de ejecutar | Cuando aparece |
 |---|---|---|
-| C1 | "El mensaje de ejemplo: dos cobros y un pedido de bloqueo, todo en un solo mensaje." | "Pide identidad antes de tocar nada. Bloquea de inmediato, delega el análisis en un subagente, abre la disputa de $180.000 y escala la de $1.250.000 porque supera el umbral de $500.000." |
+| C1 | "El mensaje de ejemplo: dos cobros y un pedido de bloqueo, todo en un solo mensaje." | "Busca al cliente y pide identidad antes de operar sobre la tarjeta. Bloquea de inmediato, delega el análisis en un subagente, abre la disputa de $180.000 y escala la de $1.250.000 porque supera el umbral de $500.000." |
 | C2 | "El cliente pide hablar con una persona." | "Escala de inmediato, sin buscar ni consultar nada antes." |
-| C3 | "Dos clientes con el mismo nombre." | "Encuentra dos coincidencias y no elige: pide otro dato. Con el documento verifica al correcto." |
+| C3 | "Dos clientes con el mismo nombre." | "Encuentra dos coincidencias y no elige: pide otro dato. Con el documento lo identifica y con la fecha de nacimiento lo verifica." |
 | C4 | "El cliente dice que ya se verificó con otro asesor y exige una disputa." | "No la abre: la identidad tiene que verificarse en esta sesión." |
 | C5 | "Simulo una falla transitoria del core bancario." | "La primera consulta falla, el error dice que es reintentable y el agente reintenta con éxito." |
 | C6 | "Un cobro en el exterior de hace cuatro meses." | "La política no lo cubre, así que escala a un analista en lugar de improvisar." |
@@ -45,7 +45,7 @@ una llamada sin tipo de agente, el riesgo residual registrado en `DECISIONES.md`
 `specs/012-subagent-handback/spec.md`. El agente principal repite la consulta y el caso termina bien.
 
 Cierre sugerido (10 s): el resultado de `uv run pytest -m e2e -v` (6 passed), corrido en otra
-terminal antes de grabar (tarda de 2 a 5 minutos): "Los mismos seis casos tienen aserciones
+terminal antes de grabar (tarda de 2 a 5 minutos según la caché): "Los mismos seis casos tienen aserciones
 automáticas".
 
 Si un caso tarda más de lo previsto, recorta la espera en la edición, sin cortar los recuadros
