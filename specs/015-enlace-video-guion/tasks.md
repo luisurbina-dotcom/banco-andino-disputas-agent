@@ -5,4 +5,4 @@
 - [X] T002 `README.md`: enlace del video en lugar de "pendiente" y quitar su punto de "Pendiente
   del autor" (FR-002, FR-003); requiere el enlace del autor
 - [X] T003 `verificar_ecosistema.sh` y suite unitaria en verde (SC-002)
-- [ ] T004 Abrir el PR con `/abrir-pr 29`
+- [X] T004 Abrir el PR con `/abrir-pr 29`
