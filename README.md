@@ -6,7 +6,7 @@ datos ficticios. Lo desarrollé con Claude Code siguiendo Spec Driven Developmen
 el backlog sincronizado en un GitHub Project.
 
 - **GitHub Project:** https://github.com/users/luisurbina-dotcom/projects/1
-- **Video de funcionamiento:** _pendiente; el autor lo agrega al publicarlo_
+- **Video de funcionamiento:** https://youtu.be/OdZPvEs2Sm8
 - **Decisiones del ecosistema:** [DECISIONES.md](DECISIONES.md) · **Principios:** [constitución](.specify/memory/constitution.md)
 
 Todos los datos son ficticios: las tarjetas aparecen solo por sus últimos 4 dígitos y los
@@ -52,7 +52,7 @@ o exporta `ANTHROPIC_API_KEY`.
 | Cobro fuera de política | `uv run python -m chat --guion demo/c6_fuera_de_politica.txt` | Escala sin disputar |
 
 Los mismos casos tienen aserciones automáticas sobre las herramientas llamadas, negadas o no
-llamadas. Toman entre 3 y 4 minutos y usan el modelo real:
+llamadas. Toman entre 2 y 5 minutos y usan el modelo real:
 
 ```bash
 uv run pytest -m e2e -v
@@ -110,5 +110,4 @@ Sin `git` instalado, los tests que arman repositorios de prueba se saltan con su
 
 ## Pendiente del autor
 
-- Publicar el video de funcionamiento y reemplazar el texto "pendiente" de arriba por el enlace.
 - Generar el `.zip` desde `main` con `uv run python scripts/empaquetar.py` y subirlo a Code Defense.
